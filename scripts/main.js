@@ -1,5 +1,4 @@
-const breadInteracts = [];
-const spreads = [];
+//orders will be done with a class that will randomly decide the toast setting and topping.
 
 // we use custom classes to allow for custom variables for the object
 class breadObj extends PIXI.Sprite {
@@ -77,8 +76,6 @@ class breadObj extends PIXI.Sprite {
         });
     }
 
-    getRid(){this.destroy();}
-
     startToastingAnims(elem, newPos){
         return new Promise((resolve) => {
             let transform = {y: elem.y};
@@ -136,13 +133,22 @@ class toasterObj extends PIXI.Sprite{
     }
 }
 
+class order{
+    constructor(x, y, toastState, toastSpreads){
+
+    }
+}
+
 function init(){
+    const div = document.getElementById('game');
     this.app = new PIXI.Application({
         height: 1080,
         width: 1920,
+        margin: 0,
         backgroundColor: 0x2f9da3
     });
-    document.body.appendChild(this.app.view);
+    //document.body.appendChild(this.app.view);
+    div.appendChild(this.app.view);
 
     const _files = [['background', 'background.png'],
                     ['bread1', 'bread1.png'],
@@ -177,6 +183,9 @@ function init(){
 
 function onReady(){
     console.log('Game Initialised');
+
+    const breadInteracts = [];
+    const spreads = [];
 
     const background = new PIXI.Sprite.from(this.loader.resources.background.texture);
     background.zIndex = 0;
@@ -245,7 +254,7 @@ function makeBread(container, loaf, breadElems, spreads, e){
         return bread;
     } else {
         // Dev tool, DELETE
-        this.bread.getRid();
+        this.bread.destroy();
         loaf.usable = true;
     }
 }
