@@ -188,16 +188,24 @@ class orderData{
         this.x = x;
         this.y = y;
         this.toastState = toastState;
+        console.log(this.toastState);
         this.toastSpreads = toastSpreads;
     }
-    makeTexture(container, orderTv, loader){
+    makeTexture(container, orderTV, loader){
         let toastTexture = `bread${this.toastState}`
+
         const toastSprite = new PIXI.Sprite.from(loader.resources[toastTexture].texture);
         toastSprite.scale.set(0.5);
         toastSprite.anchor.set(0.5);
-        toastSprite.x = orderTv.x + (orderTv.width / 3);
-        toastSprite.y = orderTv.y + (orderTv.height / 2);
+        toastSprite.x = orderTV.x + (orderTV.width / 3);
+        toastSprite.y = orderTV.y + (orderTV.height / 2);
         container.addChild(toastSprite);
+
+        const spreadSprite = new PIXI.Sprite.from(loader.resources[this.toastSpreads].texture);
+        spreadSprite.anchor.set(0.5);
+        spreadSprite.x = toastSprite.x + (orderTV.width / 3);
+        spreadSprite.y = toastSprite.y;
+        container.addChild(spreadSprite);
     }
 }
 
@@ -337,7 +345,7 @@ function spawnKnife(container, spread, e){
 
 function makeOrder(spreads, orderTV){
     let randNumSpreads = (Math.floor(Math.random() * spreads.length));
-    let randNumState = (Math.floor(Math.random() * 5));
+    let randNumState = (Math.floor(Math.random() * 5)) + 2;
     const order = new orderData(orderTV.x, orderTV.y, randNumState, spreads[randNumSpreads][0], this.loader);
     
     const orderCont = new PIXI.Container();
