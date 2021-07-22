@@ -161,13 +161,13 @@ class knifeObj extends PIXI.Sprite{
 
     dragEnd(bread, loader, plate){
         this.dragging = false;
-        if(bread.containsPoint(this)){;
+        if(bread.containsPoint(this)){
             bread.property = this.property
-            bread.texture = loader.resources[`bread${bread.state}_${this.property}`].texture;
-            plate.interactive = true;
-            this.parent.useable = true;;
-            this.destroy();
+            bread.texture = loader.resources[`bread${bread.state}_${this.property}`].texture; 
         }
+        plate.interactive = true;
+        this.parent.useable = true;;
+        this.destroy();
     }
 }
 
@@ -292,6 +292,17 @@ function onReady(){
     game.sortableChildren = true;
     this.app.stage.addChild(game);
 
+    const scoreBackground = new PIXI.Graphics();
+    scoreBackground.beginFill(0xcccccc);
+    scoreBackground.drawRoundedRect(0, 0, 300, 100, 65);
+    game.addChild(scoreBackground);
+
+    this.scoreText = new PIXI.Text(`Score: ${this.score}`, {fontFamily: 'Arial', fontSize: 62, fill: 0XE02947, align: 'left'});
+    this.scoreText.anchor.set(0.5);
+    this.scoreText.x = scoreBackground.x + this.scoreText.width / 2;
+    this.scoreText.y = scoreBackground.y + this.scoreText.height / 2;
+    game.addChild(this.scoreText);
+
     // There will be 3 chance indicators. one will light up each time a mistake is made to show the player how many chances they have
     const chanceIndicator = new PIXI.Sprite.from(this.loader.resources.x_dark.texture);
     chanceIndicator.x = this.app.view.width - (chanceIndicator.width * 1.5);
@@ -405,22 +416,28 @@ function checkScore(plate, orderTV, loaf, chanceIndicators){
             chanceIndicators[this.chances].texture = this.loader.resources.x_light.texture;
         }
     }
+    let updateScoreText = () => {
+        this.scoreText.text = `Score: ${this.score}`
+    }
     if(this.bread != undefined){
         if(plate.containsPoint(this.bread)){
-            if(this.bread.state == this.order.toastState) this.score += 100;
+            if(this.bread.state == this.order.toastState){
+                this.score += 100;  
+            } 
             else if(this.bread.state == this.order.toastState - 1 || this.bread.state == this.order.toastState + 1) this.score += 50
             else changeChanceIndicator();
 
             if(this.bread.property == this.order.toastSpreads) this.score += 50;
             else changeChanceIndicator();
 
-            if(this.chances <= 0) endGame.bind(this)(loaf);
-
             this.bread.destroy();
             this.bread = undefined;
             this.order.destroy();
             plate.interactive = false;
-            makeOrder.bind(this)(orderTV);
+            updateScoreText();
+
+            if(this.chances <= 0) endGame.bind(this)(loaf);
+            else makeOrder.bind(this)(orderTV);
         }
     }
 }
@@ -428,7 +445,43 @@ function checkScore(plate, orderTV, loaf, chanceIndicators){
 function endGame(loaf){
     loaf.interactive = false;
     console.log(`GAME OVER \nSCORE: ${this.score}`)
-    // Will use pixi's inbuilt text functions to show the player their score etc..
+
+    const popupCont = new PIXI.Container;
+    this.app.stage.addChild(popupCont);
+
+    const background = new PIXI.Graphics()
+    background.beginFill(0xADD8E6);
+    background.drawRoundedRect(0, 0, 1280, 720, 90);
+    background.position.x = (this.app.view.width / 2) - (background.width / 2);
+    background.position.y = (this.app.view.height / 2) - (background.height / 2);
+    popupCont.addChild(background);
+
+    const gameOverText = new PIXI.Text('GAME OVER', {fontFamily: 'Arial', fontSize: 62, fill: 0x000000, align: 'center'});
+    gameOverText.anchor.set(0.5);
+    gameOverText.x = background.x + background.width / 2;
+    gameOverText.y = background.y + gameOverText.height;
+    popupCont.addChild(gameOverText);
+
+    const scoreText = new PIXI.Text(`Your score: \n${this.score}`, {fontSize: 62, align: 'center'});
+    scoreText.anchor.set(0.5);
+    scoreText.x = background.x + background.width / 2;
+    scoreText.y = background.y + background.height / 2;
+    popupCont.addChild(scoreText);
+
+    const restartButton = new PIXI.Graphics()
+    restartButton.beginFill(0x63B4CF);
+    restartButton.drawRoundedRect(0, 0, 500, 150, 90);
+    restartButton.position.x = background.x + (background.width / 2 - restartButton.width / 2);
+    restartButton.position.y = (background.y + background.height) - (restartButton.height * 1.25);
+    restartButton.interactive = true;
+    restartButton.mousedown = () => location.reload();
+    popupCont.addChild(restartButton);
+
+    const restartText = new PIXI.Text(`Restart`, {fontSize: 62, align: 'center'});
+    restartText.anchor.set(0.5);
+    restartText.x = restartButton.x + restartButton.width / 2;
+    restartText.y = restartButton.y + restartButton.height / 2;
+    popupCont.addChild(restartText);
 }
 
 function animate(){TWEEN.update(this.app.ticker.lastTime);}
