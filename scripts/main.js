@@ -1,4 +1,11 @@
 // we use custom classes to allow for custom variables for the object
+// TODO: make a way to scrap bread
+//       add in main menus
+//       Make new plate sprite
+//       Add tutorial
+//       Timer for orders to make the game harder
+//       difficulty settings changes the timer
+
 class breadObj extends PIXI.Sprite {
     constructor(x = 0, y = 0, texture){
         super(texture);
@@ -248,6 +255,7 @@ function init(){
                     ['dial3', 'dial_3.png'],
                     ['dial4', 'dial_4.png'],
                     ['dial5', 'dial_5.png'],
+                    ['greyBox', 'greyBox.png'],
                     ['knife_butter', 'knife_butter.png'],
                     ['knife_nut', 'knife_nut.png'],
                     ['loaf', 'loaf.png'],
@@ -271,8 +279,64 @@ function init(){
 }
 
 function onReady(){
-    console.log('Game Initialised');
+    console.log('Game Loaded');
+    // This function will make a menu container that will then contain all the elems for the main menu,
+    // this container will get destroyed when enetering the game.
 
+    this.textStyle = {
+        fill: "#c09947",
+        fontFamily: 'Arial',
+        fontSize: 0,
+        align: 'left',
+        lineJoin: "round",
+        stroke: "#694329",
+        strokeThickness: 20 
+    }
+
+    const background = new PIXI.Sprite.from(this.loader.resources.background.texture);
+    background.zIndex = 0;
+    this.app.stage.addChild(background);
+
+    const menu = new PIXI.Container();
+    this.app.stage.addChild(menu);
+
+    const menuContainer = new PIXI.Sprite.from(this.loader.resources.greyBox.texture);
+    menuContainer.anchor.set(0.5);
+    menuContainer.position.set((background.x + background.width / 2), (background.y + background.height / 2));
+    menu.addChild(menuContainer);
+
+    this.textStyle.fontSize = 122;
+    const logo = new PIXI.Text('ToastR', this.textStyle);
+    logo.anchor.set(0.5);
+    logo.fontSize = 122;
+    logo.x = menuContainer.x;
+    logo.y = (menuContainer.y - menuContainer.height / 2) + logo.height;
+    menu.addChild(logo)
+
+    this.textStyle.fontSize = 90;
+    const playButton = new PIXI.Text('Play Now', this.textStyle);
+    playButton.anchor.set(0.5);
+    playButton.position.set(menuContainer.x, menuContainer.y);
+    playButton.interactive = true;
+    playButton.mousedown = () => {
+        menu.destroy();
+        mainGame.bind(this)();
+    }
+    menu.addChild(playButton);
+
+    const tutorialButton = new PIXI.Text('How to Play', this.textStyle);
+    tutorialButton.anchor.set(0.5);
+    tutorialButton.position.set(playButton.x, playButton.y + tutorialButton.height * 1.5);
+    tutorialButton.interactive = true;
+    tutorialButton.mousedown = () => console.log('just put bread in the toaster dumbass');
+    menu.addChild(tutorialButton);
+}
+
+function tutorial(){
+    // gonna use images of the game scene with arrows and such, using the PIXI.Text feature to create the text;
+}
+
+function mainGame(){
     let chanceIndicators = [];
     let breadInteracts = [];
     this.spreads = [];
@@ -280,10 +344,7 @@ function onReady(){
     this.score = 0;
     this.chances = 3;
 
-    const background = new PIXI.Sprite.from(this.loader.resources.background.texture);
-    background.zIndex = 0;
-    this.app.stage.addChild(background);
-
+    // Need to make new container to put all the game elems and containers into
     const orderTV = new PIXI.Sprite.from(this.loader.resources.orderTV.texture);
     orderTV.position.set(orderTV.width / 4, orderTV.height / 4);
     this.app.stage.addChild(orderTV);
@@ -292,15 +353,11 @@ function onReady(){
     game.sortableChildren = true;
     this.app.stage.addChild(game);
 
-    const scoreBackground = new PIXI.Graphics();
-    scoreBackground.beginFill(0xcccccc);
-    scoreBackground.drawRoundedRect(0, 0, 300, 100, 65);
-    game.addChild(scoreBackground);
-
-    this.scoreText = new PIXI.Text(`Score: ${this.score}`, {fontFamily: 'Arial', fontSize: 62, fill: 0XE02947, align: 'left'});
+    this.textStyle.fontSize = 62
+    this.scoreText = new PIXI.Text(`Score: ${this.score}`, this.textStyle);
     this.scoreText.anchor.set(0.5);
-    this.scoreText.x = scoreBackground.x + this.scoreText.width / 2;
-    this.scoreText.y = scoreBackground.y + this.scoreText.height / 2;
+    this.scoreText.x = 0 + this.scoreText.width / 2;
+    this.scoreText.y = 0 + this.scoreText.height / 2;
     game.addChild(this.scoreText);
 
     // There will be 3 chance indicators. one will light up each time a mistake is made to show the player how many chances they have
@@ -331,7 +388,7 @@ function onReady(){
     loaf.scale.set(0.8);
     loaf.position.set((this.app.view.width - (loaf.width * 2)) / 2, (this.app.view.height - (loaf.height - 30)) / 2);
     loaf.interactive = true;
-    loaf.mousedown = (e) => this.bread = makeBread.bind(this)(game, loaf, breadInteracts, this.spreads, e);
+    loaf.mousedown = (e) => this.bread = makeBread.bind(this)(game, breadInteracts, this.spreads, e);
     game.addChild(loaf);
 
     const choppingBoard = new PIXI.Sprite.from(this.loader.resources.choppingBoard.texture);
@@ -375,7 +432,7 @@ function onReady(){
     makeOrder.bind(this)(orderTV);
 }
 
-function makeBread(container, loaf, breadElems, spreads, e){
+function makeBread(container, breadElems, spreads, e){
     if(this.bread == undefined || this.bread == null){
         const bread = new breadObj(e.data.global.x, e.data.global.y, this.loader.resources['bread1'].texture);
         bread.mousedown = bread.dragStart;
@@ -383,9 +440,6 @@ function makeBread(container, loaf, breadElems, spreads, e){
         bread.mouseup = () => bread.dragEnd(breadElems, spreads)
         container.addChild(bread);
         return bread;
-    } else {
-        // Dev tool, DELETE
-        this.bread.destroy();
     }
 }
 
@@ -418,16 +472,17 @@ function checkScore(plate, orderTV, loaf, chanceIndicators){
     }
     let updateScoreText = () => {
         this.scoreText.text = `Score: ${this.score}`
+        this.scoreText.x = (0 + this.scoreText.width / 2); + this.score;
     }
     if(this.bread != undefined){
-        if(plate.containsPoint(this.bread)){
+        if(plate.containsPoint(this.bread) && this.bread.dragging == false){
             if(this.bread.state == this.order.toastState){
-                this.score += 100;  
+                this.score += 80;  
             } 
-            else if(this.bread.state == this.order.toastState - 1 || this.bread.state == this.order.toastState + 1) this.score += 50
+            else if(this.bread.state == this.order.toastState - 1 || this.bread.state == this.order.toastState + 1) this.score += 40
             else changeChanceIndicator();
 
-            if(this.bread.property == this.order.toastSpreads) this.score += 50;
+            if(this.bread.property == this.order.toastSpreads) this.score += 40;
             else changeChanceIndicator();
 
             this.bread.destroy();
