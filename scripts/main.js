@@ -69,12 +69,16 @@ class breadObj extends PIXI.Sprite {
     // runs the loop function until the bread has been toasted to the desired setting.
     // https://stackoverflow.com/questions/68362785/can-you-resolve-a-promise-in-an-if-statement/68363299#68363299
     changeTexture(loader, setting){
+        let i = 1;
         return new Promise((resolve) => {
             let loop = () =>  { // Using an arrow function to keep context for 'this'
                 this.state++;
                 this.texture = loader.resources[`bread${this.state}`].texture;
-                if(this.state <= setting) setTimeout(loop, 1000);
-                else if (this.state > setting) resolve();
+                if (this.state == 6 || i >= setting) resolve();
+                else if(i <= setting){
+                    i++;
+                    setTimeout(loop, 1000);
+                }
             };
             setTimeout(loop, 1000);
         });
@@ -169,6 +173,7 @@ class knifeObj extends PIXI.Sprite{
     dragEnd(bread, loader, plate){
         this.dragging = false;
         if(bread.containsPoint(this)){
+            
             bread.property = this.property
             bread.texture = loader.resources[`bread${bread.state}_${this.property}`].texture; 
         }
@@ -521,14 +526,18 @@ function mainGame(){
 }
 
 function makeBread(container, breadElems, spreads, lever, e){
-    if(this.bread == undefined || this.bread == null){
-        const bread = new breadObj(e.data.global.x, e.data.global.y, this.loader.resources['bread1'].texture);
-        bread.mousedown = bread.dragStart;
-        bread.mousemove = bread.dragMove;
-        bread.mouseup = () => bread.dragEnd(breadElems, spreads, lever)
-        container.addChild(bread);
-        return bread;
+    if(this.bread){
+        this.bread.destroy();
+        this.score -= 10;
+        this.scoreText.text = `Score: ${this.score}`
+        this.scoreText.x = (0 + this.scoreText.width / 2); + this.score;
     }
+    const bread = new breadObj(e.data.global.x, e.data.global.y, this.loader.resources['bread1'].texture);
+    bread.mousedown = bread.dragStart;
+    bread.mousemove = bread.dragMove;
+    bread.mouseup = () => bread.dragEnd(breadElems, spreads, lever)
+    container.addChild(bread);
+    return bread;
 }
 
 function spawnKnife(container, spread, plate, e){
@@ -551,7 +560,7 @@ function makeOrder(orderTV){
     this.order.makeTexture(orderCont, orderTV, this.loader);
 }
 
-function checkScore(plate, orderTV, loaf, chanceIndicators){
+function checkScore(plate = null, orderTV = null, loaf = null, chanceIndicators = null){
     let changeChanceIndicator = () => {
         this.chances -= 1;
         if(this.chances >= 0){
@@ -562,7 +571,7 @@ function checkScore(plate, orderTV, loaf, chanceIndicators){
         this.scoreText.text = `Score: ${this.score}`
         this.scoreText.x = (0 + this.scoreText.width / 2); + this.score;
     }
-    if(this.bread != undefined){
+    if(this.bread != undefined && plate){
         if(plate.containsPoint(this.bread) && this.bread.dragging == false){
             if(this.bread.state == this.order.toastState){
                 this.score += 80;  
