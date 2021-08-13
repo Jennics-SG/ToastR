@@ -193,6 +193,24 @@ class spreadObj extends PIXI.Sprite{
     }
 }
 
+class timerObj extends PIXI.Sprite{
+    constructor(x, y, texture, time, loader, parent){
+        super(texture);
+        this.parent = parent;
+        this.x = x;
+        this.y = y;
+        this.time = time;
+        this.state = 'green';
+        this.textures = this.getTextures(loader);
+    }
+
+    getTextures(loader){
+        let array = [];
+        for(let i = 1; i <= 9; i++){array.push(loader.resources[`timer_${i}`].texture);}
+        return array;
+    }
+}
+
 class orderData{
     constructor(x, y, toastState, toastSpreads, container){
         this.x = x;
@@ -209,12 +227,14 @@ class orderData{
         this.toastSprite.anchor.set(0.5);
         this.toastSprite.x = orderTV.x + (orderTV.width / 3);
         this.toastSprite.y = orderTV.y + (orderTV.height / 2);
+        this.toastSprite.zIndex = 1;
         container.addChild(this.toastSprite);
 
         this.spreadSprite = new PIXI.Sprite.from(loader.resources[this.toastSpreads].texture);
         this.spreadSprite.anchor.set(0.5);
         this.spreadSprite.x = this.toastSprite.x + (orderTV.width / 3);
         this.spreadSprite.y = this.toastSprite.y;
+        this.spreadSprite.zIndex = 1;
         container.addChild(this.spreadSprite);
     }
     destroy(){
@@ -226,30 +246,37 @@ class orderData{
 function init(){
     const div = document.getElementById('game');
     this.app = new PIXI.Application({
-        height: 1080,
-        width: 1920,
+        height: 720,
+        width: 1280,
         margin: 0,
         backgroundColor: 0x2f9da3
     });
     div.appendChild(this.app.view);
 
     const _files = [['background', 'background.png'],
+                    ['beans', 'beans.png'],
                     ['bread1', 'bread1.png'],
+                    ['bread1_beans', 'bread1_beans.png'],
                     ['bread1_butter', 'bread1_butter.png'],
                     ['bread1_nut', 'bread1_nut.png'],
                     ['bread2', 'bread2.png'],
+                    ['bread2_beans', 'bread2_beans.png'],
                     ['bread2_butter', 'bread2_butter.png'],
                     ['bread2_nut', 'bread2_nut.png'],
                     ['bread3', 'bread3.png'],
+                    ['bread3_beans', 'bread3_beans.png'],
                     ['bread3_butter', 'bread3_butter.png'],
                     ['bread3_nut', 'bread3_nut.png'],
                     ['bread4', 'bread4.png'],
+                    ['bread4_beans', 'bread4_beans.png'],
                     ['bread4_butter', 'bread4_butter.png'],
                     ['bread4_nut', 'bread4_nut.png'],
                     ['bread5', 'bread5.png'],
+                    ['bread5_beans', 'bread5_beans.png'],
                     ['bread5_butter', 'bread5_butter.png'],
                     ['bread5_nut', 'bread5_nut.png'],
                     ['bread6', 'bread6.png'],
+                    ['bread6_beans', 'bread6_beans.png'],
                     ['bread6_butter', 'bread6_butter.png'],
                     ['bread6_nut', 'bread6_nut.png'],
                     ['butter', 'butter.png'],
@@ -261,11 +288,21 @@ function init(){
                     ['dial4', 'dial_4.png'],
                     ['dial5', 'dial_5.png'],
                     ['greyBox', 'greyBox.png'],
+                    ['knife_beans', 'knife_beans.png'],
                     ['knife_butter', 'knife_butter.png'],
                     ['knife_nut', 'knife_nut.png'],
                     ['loaf', 'loaf.png'],
                     ['nut', 'nut.png'],
                     ['orderTV', 'order_tv.png'],
+                    ['timer_1', 'timer_1.png'],
+                    ['timer_2', 'timer_2.png'],
+                    ['timer_3', 'timer_3.png'],
+                    ['timer_4', 'timer_4.png'],
+                    ['timer_5', 'timer_5.png'],
+                    ['timer_6', 'timer_6.png'],
+                    ['timer_7', 'timer_7.png'],
+                    ['timer_8', 'timer_8.png'],
+                    ['timer_9', 'timer_9.png'],
                     ['plate', 'plate.png'],
                     ['toaster_down', 'toaster_down.png'],
                     ['lever', 'toaster_lever.png'],
@@ -435,94 +472,104 @@ function mainGame(){
     this.score = 0;
     this.chances = 3;
 
+    this.game = new PIXI.Container()
+    this.game.sortableChildren = true;
+    this.app.stage.addChild(this.game);
+
     // Need to make new container to put all the game elems and containers into
     const orderTV = new PIXI.Sprite.from(this.loader.resources.orderTV.texture);
     orderTV.position.set(orderTV.width / 4, orderTV.height / 4);
-    this.app.stage.addChild(orderTV);
-
-    const game = new PIXI.Container()
-    game.sortableChildren = true;
-    this.app.stage.addChild(game);
+    this.game.addChild(orderTV);
 
     this.textStyle.fontSize = 62
     this.scoreText = new PIXI.Text(`Score: ${this.score}`, this.textStyle);
     this.scoreText.anchor.set(0.5);
     this.scoreText.x = 0 + this.scoreText.width / 2;
     this.scoreText.y = 0 + this.scoreText.height / 2;
-    game.addChild(this.scoreText);
+    this.game.addChild(this.scoreText);
 
     // There will be 3 chance indicators. one will light up each time a mistake is made to show the player how many chances they have
     const chanceIndicator = new PIXI.Sprite.from(this.loader.resources.x_dark.texture);
+    chanceIndicator.scale.set(0.7);
     chanceIndicator.x = this.app.view.width - (chanceIndicator.width * 1.5);
-    chanceIndicator.y = chanceIndicator.height / 3;
-    game.addChild(chanceIndicator);
+    chanceIndicator.y = chanceIndicator.height / 4;
+    this.game.addChild(chanceIndicator);
     chanceIndicators.push(chanceIndicator);
 
     const chanceIndicator2 = new PIXI.Sprite.from(this.loader.resources.x_dark.texture);
+    chanceIndicator2.scale.set(0.7);
     chanceIndicator2.x = chanceIndicator.x - (chanceIndicator2.width * 1.5)
     chanceIndicator2.y = chanceIndicator.y;
-    game.addChild(chanceIndicator2);
+    this.game.addChild(chanceIndicator2);
     chanceIndicators.push(chanceIndicator2);
     
     const chanceIndicator3 = new PIXI.Sprite.from(this.loader.resources.x_dark.texture);
+    chanceIndicator3.scale.set(0.7);
     chanceIndicator3.x = chanceIndicator2.x - (chanceIndicator3.width * 1.5);
     chanceIndicator3.y = chanceIndicator2.y;
-    game.addChild(chanceIndicator3);
+    this.game.addChild(chanceIndicator3);
     chanceIndicators.push(chanceIndicator3);
 
-    const toaster = new toasterObj(250, this.app.view.height / 1.25, this.loader.resources.toaster_up.texture);
+    const toaster = new toasterObj((this.app.view.height / 20) * 5, this.app.view.height - this.loader.resources.toaster_up.texture.height / 2, this.loader.resources.toaster_up.texture);
     toaster.zIndex = 3;
-    game.addChild(toaster);
+    this.game.addChild(toaster);
     breadInteracts.push(['toaster', toaster]);
 
     const lever = new PIXI.Sprite.from(this.loader.resources['lever'].texture);
     lever.x = (toaster.x - toaster.width / 2) + lever.width / 1.2;
     lever.y = toaster.y - toaster.height / 4;
     lever.zIndex = 3;
-    game.addChild(lever);
+    this.game.addChild(lever);
 
     const loaf = new PIXI.Sprite.from(this.loader.resources.loaf.texture);
     loaf.scale.set(0.8);
-    loaf.position.set((this.app.view.width - (loaf.width * 2)) / 2, (this.app.view.height - (loaf.height - 30)) / 2);
+    loaf.position.set((this.app.view.width - (loaf.width * 2)) / 2, (this.app.view.height / 1.75) - loaf.height / 2);
     loaf.interactive = true;
-    loaf.mousedown = (e) => this.bread = makeBread.bind(this)(game, breadInteracts, this.spreads, lever, e);
-    game.addChild(loaf);
+    loaf.mousedown = (e) => this.bread = makeBread.bind(this)(this.game, breadInteracts, this.spreads, lever, e);
+    this.game.addChild(loaf);
 
     const choppingBoard = new PIXI.Sprite.from(this.loader.resources.choppingBoard.texture);
-    choppingBoard.position.set((this.app.view.width / 2) + 100, this.app.view.height / 1.4);
-    game.addChild(choppingBoard);
+    choppingBoard.position.set((this.app.view.width / 2), this.app.view.height / 1.4);
+    this.game.addChild(choppingBoard);
     breadInteracts.push(['choppingBoard', choppingBoard]);
 
     const plate = new PIXI.Sprite.from(this.loader.resources['plate'].texture);
-    plate.scale.set(0.7);
     plate.x = this.app.view.width / 1.5;
-    plate.y = this.app.view.height / 5
+    plate.y = (this.app.view.height / 5) * 1.75;
     plate.mousemove = () => checkScore.bind(this)(plate, orderTV, loaf, chanceIndicators);
-    game.addChild(plate);
+    this.game.addChild(plate);
 
     const butter = new spreadObj(choppingBoard.x, this.app.view.height / 2, this.loader.resources.butter.texture, 'butter');
-    butter.mousedown = (e) => this.knife = spawnKnife.bind(this)(game, butter, plate, e); 
-    game.addChild(butter);
+    butter.mousedown = (e) => this.knife = spawnKnife.bind(this)(this.game, butter, plate, e); 
+    this.game.addChild(butter);
     this.spreads.push(['butter', butter]);
 
     const nut = new spreadObj(butter.x * 1.2, butter.y, this.loader.resources.nut.texture, 'nut');
-    nut.mousedown = (e) => this.knife = spawnKnife.bind(this)(game, nut, plate, e);
-    game.addChild(nut);
+    nut.mousedown = (e) => this.knife = spawnKnife.bind(this)(this.game, nut, plate, e);
+    this.game.addChild(nut);
     this.spreads.push(['nut', nut]);
+
+    const beans = new spreadObj(nut.x * 1.2, butter.y, this.loader.resources.beans.texture, 'beans');
+    beans.mousedown = (e) => this.knife = spawnKnife.bind(this)(this.game, beans, plate, e);
+    this.game.addChild(beans);
+    this.spreads.push(['beans', beans]);
 
     const dial = new PIXI.Sprite.from(this.loader.resources['dial1'].texture);
     dial.anchor.set(0.5);
-    dial.x = toaster.x - 10;
-    dial.y = toaster.y + 50;
+    dial.x = toaster.x;
+    dial.y = toaster.y + dial.height / 2;
     dial.zIndex = 4;
     dial.interactive = true;
     dial.mousedown = () => toaster.changeSetting(dial, this.loader);
-    game.addChild(dial);
+    this.game.addChild(dial);
+
+    this.timer = new timerObj(orderTV.x, orderTV.y, this.loader.resources.timer_1.texture, 60, this.loader);
+    this.game.addChild(this.timer);
 
     toaster.mousedown = () => this.bread.makeToast(this.loader, toaster, lever);
     lever.mousedown = () => this.bread.makeTexture(this.loader, toaster, lever);
 
-    makeOrder.bind(this)(orderTV);
+    makeOrder.bind(this)(orderTV, chanceIndicators);
 }
 
 function makeBread(container, breadElems, spreads, lever, e){
@@ -540,7 +587,7 @@ function makeBread(container, breadElems, spreads, lever, e){
     return bread;
 }
 
-function spawnKnife(container, spread, plate, e){
+function spawnKnife(container, spread, plate,e){
     if(this.knife == undefined){
         const knife = new knifeObj(e.data.global.x, e.data.global.y, this.loader.resources[`knife_${spread.property}`].texture, spread);
         container.addChild(knife);
@@ -550,53 +597,95 @@ function spawnKnife(container, spread, plate, e){
     }
 }
 
-function makeOrder(orderTV){
+function makeOrder(orderTV, chanceIndicators){
     let randNumSpreads = (Math.floor(Math.random() * this.spreads.length));
     let randNumState = (Math.floor(Math.random() * 5)) + 2;    
-    const orderCont = new PIXI.Container();
-    this.app.stage.addChild(orderCont);
 
-    this.order = new orderData(orderTV.x, orderTV.y, randNumState, this.spreads[randNumSpreads][0], this.loader, orderCont);
-    this.order.makeTexture(orderCont, orderTV, this.loader);
+    this.order = new orderData(orderTV.x, orderTV.y, randNumState, this.spreads[randNumSpreads][0], this.loader, this.game);
+    this.order.makeTexture(this.game, orderTV, this.loader);
+
+    timerStart.bind(this)(chanceIndicators, orderTV);
+}
+
+function timerStart(chanceIndicators, orderTV){                                                
+    let loopMax = this.timer.textures.length - 1                                           
+    let loopCounter = 0;                                                       
+    let loop = () => {
+        this.timer.texture = this.timer.textures[loopCounter];
+        switch(loopCounter){
+            case 6:
+                this.timer.state = 'yellow';
+                break;
+            case 8:
+                this.timer.state = 'red'
+                break;
+            default: break;
+        }
+
+        if(loopCounter == loopMax) endRound.bind(this)(chanceIndicators, orderTV);
+        else if(loopCounter <= loopMax) {
+            this.timerLoop = setTimeout(loop, (this.timer.time / loopMax) * 1000);
+            loopCounter++;
+        }
+    }
+    loop();
+    
 }
 
 function checkScore(plate = null, orderTV = null, loaf = null, chanceIndicators = null){
-    let changeChanceIndicator = () => {
-        this.chances -= 1;
-        if(this.chances >= 0){
-            chanceIndicators[this.chances].texture = this.loader.resources.x_light.texture;
-        }
-    }
     let updateScoreText = () => {
         this.scoreText.text = `Score: ${this.score}`
         this.scoreText.x = (0 + this.scoreText.width / 2); + this.score;
     }
     if(this.bread != undefined && plate){
         if(plate.containsPoint(this.bread) && this.bread.dragging == false){
+
             if(this.bread.state == this.order.toastState){
                 this.score += 80;  
             } 
             else if(this.bread.state == this.order.toastState - 1 || this.bread.state == this.order.toastState + 1) this.score += 40
-            else changeChanceIndicator();
+            else changeChanceIndicator.bind(this)(chanceIndicators);
 
             if(this.bread.property == this.order.toastSpreads) this.score += 40;
-            else changeChanceIndicator();
+            else changeChanceIndicator.bind(this)(chanceIndicators);
 
             this.bread.destroy();
             this.bread = undefined;
             this.order.destroy();
             plate.interactive = false;
             updateScoreText();
+            
+            clearTimeout(this.timerLoop);
+            let scoreFirstNum = this.score.toString()[0]
+            console.log(scoreFirstNum / 5);
+            if(scoreFirstNum / 5 == 1 && this.timer.time >= 20) this.timer.time -= 10;
+            console.log(this.timer.time);
 
-            if(this.chances <= 0) endGame.bind(this)(loaf);
-            else makeOrder.bind(this)(orderTV);
+            if(this.chances <= 0) endGame.bind(this)();
+            else setTimeout( () => makeOrder.bind(this)(orderTV), 1000);
         }
     }
+    
 }
 
-function endGame(loaf){
-    loaf.interactive = false;
-    console.log(`GAME OVER \nSCORE: ${this.score}`)
+function endRound(chanceIndicator, orderTV){
+    this.timer.texture = this.loader.resources.timer_9.texture;
+    if(this.bread || this.bread != null) this.bread.destroy();
+    this.order.destroy();
+    changeChanceIndicator.bind(this)(chanceIndicator);
+    if(this.chances <= 0){
+        endGame.bind(this)();
+    }
+    else setTimeout(makeOrder.bind(this)(orderTV, chanceIndicator), 1000);
+}
+
+function changeChanceIndicator(chanceIndicators){
+    this.chances -= 1;
+    if(this.chances >= 0)chanceIndicators[this.chances].texture = this.loader.resources.x_light.texture;
+}
+
+function endGame(){
+    this.game.interactive = false;
 
     const popupCont = new PIXI.Container;
     this.app.stage.addChild(popupCont);
@@ -626,7 +715,11 @@ function endGame(loaf){
     restartButton.position.x = background.x + (background.width / 2 - restartButton.width / 2);
     restartButton.position.y = (background.y + background.height) - (restartButton.height * 1.25);
     restartButton.interactive = true;
-    restartButton.mousedown = () => location.reload();
+    restartButton.mousedown = () => {
+        this.game.destroy();
+        popupCont.destroy();
+        onReady.bind(this)();
+    }
     popupCont.addChild(restartButton);
 
     const restartText = new PIXI.Text(`Restart`, {fontSize: 62, align: 'center'});
