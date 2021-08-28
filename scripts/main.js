@@ -32,7 +32,7 @@ class breadObj extends PIXI.Sprite {
         }
     }
 
-    dragEnd(elems, spreads, lever){
+    dragEnd(elems, spreads){
         let spreadsInteractive = () => {for(const elem of spreads) elem[1].interactive = true}
         let spreadsUninteractive = () => {for(const elem of spreads) elem[1].interactive = false;}
         this.dragging = false;
@@ -46,12 +46,11 @@ class breadObj extends PIXI.Sprite {
 
     /* makeToast does the animations for toasting the bread, it also makes the bread non interactive so that the player cant drag the toast out of
     the toaster while toasting. This is an async function so we can use await */ 
-    async makeToast(loader, toaster, lever){
+    async makeToast(loader, toaster, lever, loaf){
         if(this.state != 6){
-            toaster.texture = loader.resources['toaster_down'].texture;
             this.interactive = false;
             this.x = toaster.x;
-            this.y = toaster.y - 100;
+            this.y = toaster.y - toaster.height / 1.5;
 
             // Runs both functions at once
             await Promise.allSettled([this.startToastingAnims(this, toaster.y - 50, 200), this.startToastingAnims(lever, toaster.y + toaster.height / 3.5, 250)]);
@@ -60,9 +59,10 @@ class breadObj extends PIXI.Sprite {
             await this.changeTexture(loader, toaster.setting);
 
             // Tween the toast popping out of the toaster here
-            await Promise.all([this.finToastingBread(this, toaster.y - 250), this.finToastingLever(lever, toaster.y - 50)]);
+            await Promise.all([this.finToastingBread(this, toaster.y - 250), this.finToastingLever(lever, toaster.y - toaster.height / 4)]);
             toaster.texture = loader.resources['toaster_up'].texture;
             this.interactive = true;
+            loaf.interactive = true;
         }
     }
 
@@ -80,7 +80,7 @@ class breadObj extends PIXI.Sprite {
                     setTimeout(loop, 1000);
                 }
             };
-            setTimeout(loop, 1000);
+            this.timerLoop = setTimeout(loop, 1000);
         });
     }
 
@@ -97,16 +97,17 @@ class breadObj extends PIXI.Sprite {
     finToastingBread(elem, newPos){
         return new Promise((resolve) => {
             let transform = {y: elem.y};
-            let popUp = new TWEEN.Tween(transform)
+            this.popUp = new TWEEN.Tween(transform)
                 .to({y: newPos}, 250)
-                .onUpdate(() => elem.y = transform.y);
+                .onUpdate(() =>elem.y = transform.y);
 
             let fallDown = new TWEEN.Tween(transform)
                 .to({y: newPos + 150}, 150)
                 .onUpdate(() => elem.y = transform.y);
 
-            popUp.chain(fallDown);
-            popUp.start();
+            this.popUp.chain(fallDown);
+            this.popUp.start();
+            
             resolve();
         });
     }
@@ -525,7 +526,14 @@ function mainGame(){
     loaf.scale.set(0.8);
     loaf.position.set((this.app.view.width - (loaf.width * 2)) / 2, (this.app.view.height / 1.75) - loaf.height / 2);
     loaf.interactive = true;
-    loaf.mousedown = (e) => this.bread = makeBread.bind(this)(this.game, breadInteracts, this.spreads, lever, e);
+    loaf.mousedown = (e) =>{
+        if(this.bread){
+            this.bread.popUp.stop();
+            this.bread.finToastingLever(lever, toaster.y - toaster.height / 4);
+            toaster.texture = this.loader.resources.toaster_up.texture
+        }
+        this.bread = makeBread.bind(this)(this.game, breadInteracts, this.spreads, lever, e);
+    }
     this.game.addChild(loaf);
 
     const choppingBoard = new PIXI.Sprite.from(this.loader.resources.choppingBoard.texture);
@@ -566,14 +574,24 @@ function mainGame(){
     this.timer = new timerObj(orderTV.x, orderTV.y, this.loader.resources.timer_1.texture, 60, this.loader);
     this.game.addChild(this.timer);
 
-    toaster.mousedown = () => this.bread.makeToast(this.loader, toaster, lever);
-    lever.mousedown = () => this.bread.makeTexture(this.loader, toaster, lever);
-
+    toaster.mousedown = () =>{
+        toaster.texture = this.loader.resources['toaster_down'].texture;
+        toaster.interactive = false;
+        loaf.interactive = false;
+        this.bread.makeToast(this.loader, toaster, lever, loaf);
+    }
+    lever.mousedown = () =>{
+        toaster.texture = this.loader.resources['toaster_down'].texture;
+        toaster.interactive = false;
+        loaf.interactive = false;
+        this.bread.makeToast(this.loader, toaster, lever, loaf);
+    }
     makeOrder.bind(this)(orderTV, chanceIndicators);
 }
 
 function makeBread(container, breadElems, spreads, lever, e){
     if(this.bread){
+        clearTimeout(this.bread.timerLoop);
         this.bread.destroy();
         this.score -= 10;
         this.scoreText.text = `Score: ${this.score}`
@@ -640,9 +658,7 @@ function checkScore(plate = null, orderTV = null, loaf = null, chanceIndicators 
     if(this.bread != undefined && plate){
         if(plate.containsPoint(this.bread) && this.bread.dragging == false){
 
-            if(this.bread.state == this.order.toastState){
-                this.score += 80;  
-            } 
+            if(this.bread.state == this.order.toastState) this.score += 80;   
             else if(this.bread.state == this.order.toastState - 1 || this.bread.state == this.order.toastState + 1) this.score += 40
             else changeChanceIndicator.bind(this)(chanceIndicators);
 
@@ -656,10 +672,9 @@ function checkScore(plate = null, orderTV = null, loaf = null, chanceIndicators 
             updateScoreText();
             
             clearTimeout(this.timerLoop);
+            
             let scoreFirstNum = this.score.toString()[0]
-            console.log(scoreFirstNum / 5);
             if(scoreFirstNum / 5 == 1 && this.timer.time >= 20) this.timer.time -= 10;
-            console.log(this.timer.time);
 
             if(this.chances <= 0) endGame.bind(this)();
             else setTimeout( () => makeOrder.bind(this)(orderTV), 1000);
@@ -676,7 +691,7 @@ function endRound(chanceIndicator, orderTV){
     if(this.chances <= 0){
         endGame.bind(this)();
     }
-    else setTimeout(makeOrder.bind(this)(orderTV, chanceIndicator), 1000);
+    else setTimeout( () => makeOrder.bind(this)(orderTV, chanceIndicator), 1000);
 }
 
 function changeChanceIndicator(chanceIndicators){
