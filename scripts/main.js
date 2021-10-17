@@ -1,11 +1,38 @@
-// we use custom classes to allow for custom variables for the object
-// TODO: make a way to scrap bread
-//       Make new plate sprite
-//       Timer for orders to make the game harder
-//       difficulty settings changes the timer
+// TODO UPGRADE STORE:  
+//                      Upgrade score screen:
+//                         - Dark grey border, grey box.
+//                         - icon for each upgrade
+//                         - upgrades cost score
+//                      spreading mechanic
+//                         - have to spread 3 times originally, 2 times with one upgrade, 1 time with final
+//                         - bigger knife for upgrade
+//                      crumb tray
+//                          - have to empty every 3-4 rounds with one upgrade has 50% chance of breaking and ending the game 5 90% cahnce and 6 100% chance.
+//                          - 5-6, 7 and 8 rounds with one upgrade. it carries on sequentially like this.
+//                          - deeper crumb tray for upgrade
+//                      double score
+//                          - player gets double score for 2 minutes. this is available forever but the price triples each time and it decreases by 30s
+//                      higher quality bread
+//                          - this increases the score of the bread permenantly by 20 with each upgrade. this increases forever.
+//                      higher quality spreads
+//                          - same as bread
+//                      comment
+//      
+// 
 
-class breadObj extends PIXI.Sprite {
-    constructor(x = 0, y = 0, texture){
+/**
+ * Class representing a bread object
+ * @extends PIXI.Sprite
+ */
+ class breadObj extends PIXI.Sprite {
+    /**
+     * Create a piece of bread
+     * 
+     * @param {number} x                X position of bread
+     * @param {number} y                Y position of bread
+     * @param {PIXI.Texture} texture    Bread texture
+     */
+    constructor(x = 0, y = 0, texture, bonus = 0){
         super(texture);
         this.anchor.set(0.5);
         this.x = x;
@@ -16,15 +43,29 @@ class breadObj extends PIXI.Sprite {
         this.interactive = true;
         this.zIndex = 2;
         this.dragging = true;
+        this.bonus = bonus;
     }
 
-    // Dragging physics and code
+    /** Start dragging the bread, set dragging to true so it doesnt move when the mouse does.
+     * 
+     * @alias breadObj.dragStart
+     * 
+     * @param {object} e mouse data
+     * @returns null
+     */
     dragStart(e){
         this.x = e.data.global.x;
         this.y = e.data.global.y;
         this.dragging = true;
     }
 
+    /** Drag the bread with the mouse if dragging state is true
+     * 
+     * @alias breadObj.dragMove
+     * 
+     * @param {object} e mouse data
+     * @returns null
+     */
     dragMove(e){
         if(this.dragging){
             this.x = e.data.global.x;
@@ -32,7 +73,26 @@ class breadObj extends PIXI.Sprite {
         }
     }
 
+    /** Stop dragging the bread
+     * 
+     * Stop dragging the bread and check to see if anything should be interactive
+     * 
+     * @alias breadObj.dragEnd
+     * 
+     * @param {array} elems     all game elements that depend on bread position to be interactive
+     * @param {array} spreads   the toppings for toast
+     * 
+     * @returns null
+     */
     dragEnd(elems, spreads){
+        /**
+         * Set spreads interactive state
+         * 
+         * @alias breadObj.dragEnd~spreadsInteractive
+         * @alias breadObj.dragEnd~spreadsUninteractive
+         * 
+         * @returns null
+         */
         let spreadsInteractive = () => {for(const elem of spreads) elem[1].interactive = true}
         let spreadsUninteractive = () => {for(const elem of spreads) elem[1].interactive = false;}
         this.dragging = false;
@@ -44,8 +104,21 @@ class breadObj extends PIXI.Sprite {
         }
     }
 
-    /* makeToast does the animations for toasting the bread, it also makes the bread non interactive so that the player cant drag the toast out of
-    the toaster while toasting. This is an async function so we can use await */ 
+    /** Start toasting functions
+     * 
+     * sets object to not interactive, changes the x and y and starts the 
+     * animations for toasting. when the animations are finished it stops toasting
+     * and pops out the toaster.
+     * 
+     * @alias breadObj.makeToast
+     * 
+     * @param {PIXI.Loader} loader  the pixi Loader containing the game files
+     * @param {toasterObj}  toaster the toaster object from the game
+     * @param {PIXI.Sprite} lever   PIXI lever object from the game
+     * @param {PIXI.Sprite} loaf    PIXI loaf object from the game
+     * 
+     * @returns null
+     */
     async makeToast(loader, toaster, lever, loaf){
         if(this.state != 6){
             this.interactive = false;
@@ -56,7 +129,7 @@ class breadObj extends PIXI.Sprite {
             await Promise.allSettled([this.startToastingAnims(this, toaster.y - 50, 200), this.startToastingAnims(lever, toaster.y + toaster.height / 3.5, 250)]);
 
             // We use await to make sure changeTexture has finished running before we execute any more code
-            await this.changeTexture(loader, toaster.setting);
+            await this.changeTexture(loader, toaster.setting, toaster.time);
 
             // Tween the toast popping out of the toaster here
             await Promise.all([this.finToastingBread(this, toaster.y - 250), this.finToastingLever(lever, toaster.y - toaster.height / 4)]);
@@ -66,10 +139,22 @@ class breadObj extends PIXI.Sprite {
         }
     }
 
-    // runs the loop function until the bread has been toasted to the desired setting.
-    // https://stackoverflow.com/questions/68362785/can-you-resolve-a-promise-in-an-if-statement/68363299#68363299
-    changeTexture(loader, setting){
+    /**
+     * Change texture of bread
+     * 
+     * Using a loop and setTimeout function we change the texture of the bread 
+     * to the desired setting of the toaster 
+     * 
+     * @alias breadObj.changeTexture
+     * 
+     * @param {PIXI.Loader} loader  PIXI loader containg all the game files
+     * @param {number}      setting Toaster setting
+     * 
+     * @returns promise
+     */
+    changeTexture(loader, setting, time){
         let i = 1;
+        console.log(time);
         return new Promise((resolve) => {
             let loop = () =>  { // Using an arrow function to keep context for 'this'
                 this.state++;
@@ -77,13 +162,24 @@ class breadObj extends PIXI.Sprite {
                 if (this.state == 6 || i >= setting) resolve();
                 else if(i <= setting){
                     i++;
-                    setTimeout(loop, 1000);
+                    setTimeout(loop, time);
                 }
             };
-            this.timerLoop = setTimeout(loop, 1000);
+            this.timerLoop = setTimeout(loop, time);
         });
     }
 
+    /**
+     * Start the toasting animations
+     * 
+     * @alias breadObj.startToastingAnims
+     * 
+     * @param {object} elem   Element that is being animated
+     * @param {number} newPos new position of element
+     * @param {number} time   amount of time for animation
+     * 
+     * @returns promise
+     */
     startToastingAnims(elem, newPos, time){
         return new Promise((resolve) => {
             let transform = {y: elem.y};
@@ -94,6 +190,20 @@ class breadObj extends PIXI.Sprite {
             resolve();
         });
     }
+
+    /**
+     * Finish toasting animations
+     * 
+     * bread has two so the toast pops up then down
+     * 
+     * @alias breadObj.finToastingBread
+     * @alias breadObj.finToastingLever
+     * 
+     * @param {object} elem   element to be moved
+     * @param {number} newPos new position of element
+     * 
+     * @returns promise
+     */
     finToastingBread(elem, newPos){
         return new Promise((resolve) => {
             let transform = {y: elem.y};
@@ -130,15 +240,20 @@ class toasterObj extends PIXI.Sprite{
         this.x = x;
         this.y = y;
         this.scale.set(0.8);
-
-        // toasterObj.setting will be set by a dial on the toaster. for now default value is 5
+        this.upgradeState = 0;
         this.setting = 1;
+        this.time = 3000
     }
 
     changeSetting(dial, loader){
         this.setting = (this.setting + 1) % 6;
         if(this.setting == 0) this.setting += 1;
         dial.texture = loader.resources[`dial${this.setting}`].texture;
+    }
+
+    upgrade(){
+        this.time -= 500;
+        this.upgradeState++;
     }
 }
 
@@ -191,6 +306,7 @@ class spreadObj extends PIXI.Sprite{
         this.y = y;
         this.property = property;
         this.useable = true;
+        this.bonus = 0;
     }
 }
 
@@ -201,6 +317,8 @@ class timerObj extends PIXI.Sprite{
         this.x = x;
         this.y = y;
         this.time = time;
+        this.remaining = time;
+        this.timeout;
         this.state = 'green';
         this.textures = this.getTextures(loader);
     }
@@ -210,6 +328,128 @@ class timerObj extends PIXI.Sprite{
         for(let i = 1; i <= 9; i++){array.push(loader.resources[`timer_${i}`].texture);}
         return array;
     }
+}
+
+class upgradeStore{
+    constructor(loader, x, y, app, upgradeableItems){
+        this.loader = loader;
+
+        let textStyle = {
+            fill: "#c09947",
+            fontFamily: 'Arial',
+            fontSize: 30,
+            align: 'left',
+            lineJoin: "round",
+            stroke: "#694329",
+            strokeThickness: 10 
+        }
+
+        this.upgrades = [];
+
+        this.cont = new PIXI.Container();
+        this.cont.scale.set(0);
+        app.stage.addChild(this.cont);
+
+        const background = new PIXI.Sprite.from(this.loader.resources.shop_background.texture);
+        background.scale.set(0.5);
+        background.anchor.set(0.5);
+        background.position.set(x, y);
+        this.cont.addChild(background);
+
+        const exitButton = new PIXI.Sprite.from(this.loader.resources.x_light.texture);
+        exitButton.anchor.set(1, 0);
+        exitButton.scale.set(0.75);
+        exitButton.position.set(background.x + background.width / 2, background.y - background.height / 2);
+        exitButton.interactive = true;
+        exitButton.mousedown = () => this.popDown();
+        this.cont.addChild(exitButton)
+
+        const logo = new PIXI.Text("Jimy's Upgrade Store", textStyle);
+        logo.anchor.set(0.5);
+        logo.x = background.width / 1.5;
+        logo.y = background.height / 3.5;
+        this.cont.addChild(logo);
+        textStyle.fontSize = 30;
+
+        this.toasterUpgrade = new upgrade(background.width / 3, background.height / 2, 5, upgradeableItems[0][1], loader.resources.toaster_up.texture, 100, textStyle, this.cont, `Faster Toaster`);
+        this.upgrades.push(['toaster', this.toasterUpgrade]);
+
+        this.bread ={
+            upgradeState: 0,
+            upgrade: function(){this.upgradeState++;}
+        }
+        this.breadUpgrade = new upgrade(background.width / 3, background.height, 5, this.bread, loader.resources.bread1.texture, 100, textStyle, this.cont, `Higher quality bread`);
+
+
+        //this.popUp()
+    }
+
+    popUp(){
+        let tranform = {scale: 0};
+        const anim = new TWEEN.Tween(tranform)
+            .to({scale: 1}, 200)
+            .onUpdate(() => this.cont.scale.set(tranform.scale));
+        anim.start();
+    }
+    popDown(){
+        let transform = {scale: 1};
+        const anim = new TWEEN.Tween(transform)
+            .to({scale: 0}, 200)
+            .onUpdate(() => this.cont.scale.set(transform.scale));
+        anim.start();
+    }
+}
+
+class upgrade{
+    constructor(x, y, maxState, upgrades, texture, cost, textStyle, upgradeStoreCont, ID){
+        this.x = x;
+        this.y = y;
+        this.maxState = maxState;
+        this.upgrades = upgrades;
+        this.icon = texture;
+        this.cost = cost;
+        this.currentState = 0;
+        this.ID = ID;
+
+        const container = new PIXI.Container();
+        upgradeStoreCont.addChild(container);
+
+        this.icon = new PIXI.Sprite.from(this.icon);
+        this.icon.anchor.set(0.5)
+        this.icon.scale.set(0.5)
+        this.icon.position.set(this.x, this.y);
+        this.icon.interactive = true;
+        console.log(mainGame.score); 
+        this.icon.mousedown = () => {
+            if(this.upgrades.upgradeState != this.maxState && mainGame.score >= this.cost){
+                mainGame.score -= this.cost;
+                this.upgrades.upgrade();
+                this.cost = Math.floor(this.cost * 1.5);
+                this.currentState++;
+                this.updateStateText();
+                this.updateCostText();
+            }
+        }
+        container.addChild(this.icon);
+
+        this.upgradeTitle = new PIXI.Text(this.ID, textStyle);
+        this.upgradeTitle.anchor.set(0, -1);
+        this.upgradeTitle.position.set(this.icon.x + this.upgradeTitle.width / 2, this.icon.y - this.icon.height);
+        container.addChild(this.upgradeTitle);
+
+        this.stateText = new PIXI.Text(`${this.currentState}/${this.maxState}`, textStyle);
+        this.stateText.anchor.set(0, 0.5);
+        this.stateText.position.set(this.icon.x + this.icon.width, this.icon.y + this.stateText.height / 2);
+        container.addChild(this.stateText);
+
+        this.costText = new PIXI.Text(`$${this.cost}`, textStyle);
+        this.costText.anchor.set(0.5);
+        this.costText.position.set(this.x, this.y);
+        container.addChild(this.costText);
+    }
+
+    updateStateText(){this.stateText.text = `${this.upgrades.upgradeState}/${this.maxState}`;}
+    updateCostText(){this.costText.text = `$${this.cost}`;}
 }
 
 class orderData{
@@ -244,6 +484,16 @@ class orderData{
     }
 }
 
+/**
+ * Initialise the game app and load files for game.
+ * 
+ * This function creates the PIXI App and uses the PIXI Loader to pre load in the
+ * game files. When the loader has finished loading in all files it runs the
+ * onReady function and logs Loader errors to the console.
+ * 
+ * @returns null
+ */
+
 function init(){
     const div = document.getElementById('game');
     this.app = new PIXI.Application({
@@ -260,26 +510,32 @@ function init(){
                     ['bread1_beans', 'bread1_beans.png'],
                     ['bread1_butter', 'bread1_butter.png'],
                     ['bread1_nut', 'bread1_nut.png'],
+                    ['bread1_peanut', 'bread1_peanut.png'],
                     ['bread2', 'bread2.png'],
                     ['bread2_beans', 'bread2_beans.png'],
                     ['bread2_butter', 'bread2_butter.png'],
                     ['bread2_nut', 'bread2_nut.png'],
+                    ['bread2_peanut', 'bread2_peanut.png'],
                     ['bread3', 'bread3.png'],
                     ['bread3_beans', 'bread3_beans.png'],
                     ['bread3_butter', 'bread3_butter.png'],
                     ['bread3_nut', 'bread3_nut.png'],
+                    ['bread3_peanut', 'bread3_peanut.png'],
                     ['bread4', 'bread4.png'],
                     ['bread4_beans', 'bread4_beans.png'],
                     ['bread4_butter', 'bread4_butter.png'],
                     ['bread4_nut', 'bread4_nut.png'],
+                    ['bread4_peanut', 'bread4_peanut.png'],
                     ['bread5', 'bread5.png'],
                     ['bread5_beans', 'bread5_beans.png'],
                     ['bread5_butter', 'bread5_butter.png'],
                     ['bread5_nut', 'bread5_nut.png'],
+                    ['bread5_peanut', 'bread5_peanut.png'],
                     ['bread6', 'bread6.png'],
                     ['bread6_beans', 'bread6_beans.png'],
                     ['bread6_butter', 'bread6_butter.png'],
                     ['bread6_nut', 'bread6_nut.png'],
+                    ['bread6_peanut', 'bread6_peanut.png'],
                     ['butter', 'butter.png'],
                     ['choppingBoard', 'chopping_board.png'],
                     ['continue_arrow', 'continue_arrow.png'],
@@ -292,6 +548,7 @@ function init(){
                     ['knife_beans', 'knife_beans.png'],
                     ['knife_butter', 'knife_butter.png'],
                     ['knife_nut', 'knife_nut.png'],
+                    ['knife_peanut', 'knife_peanut.png'],
                     ['loaf', 'loaf.png'],
                     ['nut', 'nut.png'],
                     ['orderTV', 'order_tv.png'],
@@ -304,7 +561,10 @@ function init(){
                     ['timer_7', 'timer_7.png'],
                     ['timer_8', 'timer_8.png'],
                     ['timer_9', 'timer_9.png'],
+                    ['peanut_butter', 'peanut_butter.png'],
                     ['plate', 'plate.png'],
+                    ['shop_background', 'shop_background.png'],
+                    ['shopping_cart', 'shopping_cart.png'],
                     ['toaster_down', 'toaster_down.png'],
                     ['lever', 'toaster_lever.png'],
                     ['toaster_up', 'toaster.png'],
@@ -327,10 +587,16 @@ function init(){
     this.app.ticker.add(animate.bind(this));
 }
 
+/**
+ * Summary: Creates the game's main menu with menu elements  to progress to the game or tutorial.
+ * 
+ *This function uses PIXI Containers to make a menu container that holds menu elements.
+ *These elements have callback functions to progress to the game or the tutorial.
+ *When this is done the menu container is destroyed.
+ * 
+ * @returns null
+ */
 function onReady(){
-    // This function will make a menu container that will then contain all the elems for the main menu,
-    // this container will get destroyed when enetering the game.
-
     this.textStyle = {
         fill: "#c09947",
         fontFamily: 'Arial',
@@ -366,6 +632,11 @@ function onReady(){
     playButton.anchor.set(0.5);
     playButton.position.set(menuContainer.x, menuContainer.y);
     playButton.interactive = true;
+    /** Function fires when user clicks on playbutton element, it then destroys the menu
+     *  container and runs the mainGame function
+     * @alias onReady~playButton.mousedown
+     * @returns null
+     */
     playButton.mousedown = () => {
         menu.destroy();
         mainGame.bind(this)();
@@ -376,6 +647,11 @@ function onReady(){
     tutorialButton.anchor.set(0.5);
     tutorialButton.position.set(playButton.x, playButton.y + tutorialButton.height * 1.5);
     tutorialButton.interactive = true;
+    /** Function fires when user clicks on tutorialButton element, it then destroys the
+     *  menu container and runs the mainGame function.
+     * @alias onReady~tutorialButton.mousedown
+     * @returns null
+     */
     tutorialButton.mousedown = () => {
         menu.destroy();
         background.destroy();
@@ -384,9 +660,18 @@ function onReady(){
     menu.addChild(tutorialButton);
 }
 
+/**
+ * This function contains the tutorial game scene.
+ * 
+ * This function uses a scene object variable and other functions to display
+ * different images of the game. The scene also has a continue arrow that displays
+ * the next image.
+ * 
+ * @alias tutorial
+ * 
+ * @returns null
+ */
 function tutorial(){
-    // gonna use images of the game scene with arrows and such, using the PIXI.Text feature to create the text;
-
     let currentScene = {
         elem: null,
         number: 0,
@@ -396,6 +681,18 @@ function tutorial(){
     const tutorialCont = new PIXI.Container();
     this.app.stage.addChild(tutorialCont);
 
+    /**
+     * Render a given element to the PIXI app and return the element.
+     * 
+     * @alias tutorial~renderElem
+     * 
+     * @param   {PIXI.Texture}  image         The PIXI.Texture of the current tutorial image
+     * @param   {number}        x             The desired X position of the Image object
+     * @param   {number}        y             The desired Y position of the Image Object 
+     * @param   {boolean}       scene = true  Wether the desired image to be rendered is a new Scene or not
+     * 
+     * @returns {object}                      The Scene element
+     */
     let renderElem = function(image, x, y, scene = true){
         const elem = new PIXI.Sprite.from(image);
         elem.anchor.set(0.5);
@@ -414,6 +711,17 @@ function tutorial(){
 
     }
 
+    /**
+     * Deletes the current tutorial scene and calls the tutorial~renderElem function to render next.
+     * 
+     * Using a switch statement and the number property of the scene object, this function
+     * gets which tutorial scene should be next, calls for said scene to be rendered,
+     * and then deletes the current scene.
+     * 
+     * @alias tutorial~nextScene
+     * 
+     * @returns null
+     */
     let nextScene = () => {
         if(currentScene.elem != null && currentScene.continueButton != null){
             currentScene.elem.destroy();
@@ -455,6 +763,13 @@ function tutorial(){
         }
     }
 
+    /**
+     * Render continue button to screen
+     * 
+     * @alias tutorial~renderConinueButton
+     * 
+     * @returns PIXI.Sprite object
+     */
     let renderConinueButton = () => {
         const continueButton = renderElem(this.loader.resources.continue_arrow.texture, (this.app.view.width / 64) * 61, this.app.view.height / 2, false);
         continueButton.interactive = true;
@@ -465,9 +780,18 @@ function tutorial(){
     nextScene();
 }
 
+/**
+ * Contains the main game element creation and logic
+ * 
+ * This function creates all the game elements along with all their callbacks. it does
+ * this all within a pixi container so that can be destroyed when the game is over.
+ * 
+ * @returns null
+ */
 function mainGame(){
     let chanceIndicators = [];
     let breadInteracts = [];
+    let upgradeableItems = [];
     this.spreads = [];
 
     this.score = 0;
@@ -477,19 +801,17 @@ function mainGame(){
     this.game.sortableChildren = true;
     this.app.stage.addChild(this.game);
 
-    // Need to make new container to put all the game elems and containers into
     const orderTV = new PIXI.Sprite.from(this.loader.resources.orderTV.texture);
     orderTV.position.set(orderTV.width / 4, orderTV.height / 4);
     this.game.addChild(orderTV);
 
     this.textStyle.fontSize = 62
-    this.scoreText = new PIXI.Text(`Score: ${this.score}`, this.textStyle);
+    this.scoreText = new PIXI.Text(`$: ${this.score}`, this.textStyle);
     this.scoreText.anchor.set(0.5);
     this.scoreText.x = 0 + this.scoreText.width / 2;
     this.scoreText.y = 0 + this.scoreText.height / 2;
     this.game.addChild(this.scoreText);
 
-    // There will be 3 chance indicators. one will light up each time a mistake is made to show the player how many chances they have
     const chanceIndicator = new PIXI.Sprite.from(this.loader.resources.x_dark.texture);
     chanceIndicator.scale.set(0.7);
     chanceIndicator.x = this.app.view.width - (chanceIndicator.width * 1.5);
@@ -515,6 +837,7 @@ function mainGame(){
     toaster.zIndex = 3;
     this.game.addChild(toaster);
     breadInteracts.push(['toaster', toaster]);
+    upgradeableItems.push(['toaster', toaster]);
 
     const lever = new PIXI.Sprite.from(this.loader.resources['lever'].texture);
     lever.x = (toaster.x - toaster.width / 2) + lever.width / 1.2;
@@ -526,9 +849,21 @@ function mainGame(){
     loaf.scale.set(0.8);
     loaf.position.set((this.app.view.width - (loaf.width * 2)) / 2, (this.app.view.height / 1.75) - loaf.height / 2);
     loaf.interactive = true;
+
+    /** Creates a new bread object
+     * 
+     * If a piece of bread already exists this function stops its animations and
+     * then creates a new piece of bread which is set to the global scope variable 
+     * 'this.bread'.
+     * 
+     * @alias mainGame~loaf.mousedown
+     * 
+     * @param {object} e Mouse data
+     * @returns null
+     */
     loaf.mousedown = (e) =>{
         if(this.bread){
-            this.bread.popUp.stop();
+            if(this.bread.popUp) this.bread.popUp.stop();
             this.bread.finToastingLever(lever, toaster.y - toaster.height / 4);
             toaster.texture = this.loader.resources.toaster_up.texture
         }
@@ -536,6 +871,8 @@ function mainGame(){
     }
     this.game.addChild(loaf);
 
+
+    // add moseOver and mouseExit events to chopping board so that it can make spreads interactive when bread is in place
     const choppingBoard = new PIXI.Sprite.from(this.loader.resources.choppingBoard.texture);
     choppingBoard.position.set((this.app.view.width / 2), this.app.view.height / 1.4);
     this.game.addChild(choppingBoard);
@@ -552,15 +889,20 @@ function mainGame(){
     this.game.addChild(butter);
     this.spreads.push(['butter', butter]);
 
-    const nut = new spreadObj(butter.x * 1.2, butter.y, this.loader.resources.nut.texture, 'nut');
+    const nut = new spreadObj(butter.x + butter.width * 1.2, butter.y, this.loader.resources.nut.texture, 'nut');
     nut.mousedown = (e) => this.knife = spawnKnife.bind(this)(this.game, nut, plate, e);
     this.game.addChild(nut);
     this.spreads.push(['nut', nut]);
 
-    const beans = new spreadObj(nut.x * 1.2, butter.y, this.loader.resources.beans.texture, 'beans');
+    const beans = new spreadObj(nut.x + butter.width * 1.2, butter.y, this.loader.resources.beans.texture, 'beans');
     beans.mousedown = (e) => this.knife = spawnKnife.bind(this)(this.game, beans, plate, e);
     this.game.addChild(beans);
     this.spreads.push(['beans', beans]);
+
+    const peanut = new spreadObj(beans.x + butter.width * 1.2, butter.y, this.loader.resources.peanut_butter.texture, 'peanut');
+    peanut.mousedown = (e) => this.knife = spawnKnife.bind(this)(this.game, peanut, plate, e);
+    this.game.addChild(peanut);
+    this.spreads.push(['peanut_butter', peanut]);
 
     const dial = new PIXI.Sprite.from(this.loader.resources['dial1'].texture);
     dial.anchor.set(0.5);
@@ -574,6 +916,26 @@ function mainGame(){
     this.timer = new timerObj(orderTV.x, orderTV.y, this.loader.resources.timer_1.texture, 60, this.loader);
     this.game.addChild(this.timer);
 
+    this.upgradeStore = this.upgradeStore = new upgradeStore(this.loader, this.app.view.width / 2, this.app.view.height / 2, this.app, upgradeableItems);
+    this.upgradeStore = this.upgradeStore = new upgradeStore(this.loader, this.app.view.width / 2, this.app.view.height / 2, this.app, upgradeableItems);
+
+    shoppingCart = new PIXI.Sprite.from(this.loader.resources.shopping_cart.texture);
+    shoppingCart.anchor.set(1);
+    shoppingCart.position.set(this.app.view.width - shoppingCart.width / 10, this.app.view.height - shoppingCart.height / 5);
+    shoppingCart.interactive = true;
+    shoppingCart.mousedown = () => this.upgradeStore.popUp();
+    this.game.addChild(shoppingCart);
+
+    /** Starts the toasting process for bread
+     * 
+     * Changes the texture of the toaster and sets itself and the loaf object to non interactive.
+     * It then calls the bread.makeToast function
+     * 
+     * @alias mainGame~toaster.mousedown
+     * @alias mainGame~lever.mousedown
+     * 
+     * @returns null
+     */
     toaster.mousedown = () =>{
         toaster.texture = this.loader.resources['toaster_down'].texture;
         toaster.interactive = false;
@@ -586,18 +948,34 @@ function mainGame(){
         loaf.interactive = false;
         this.bread.makeToast(this.loader, toaster, lever, loaf);
     }
+    console.log(this.loader);
     makeOrder.bind(this)(orderTV, chanceIndicators);
 }
 
+/** make a new bread object 
+ * 
+ * Destroys the current piece of bread and takes 10 away from the score if it
+ * exists. It then creates a new breadObj at the location of the mouse x and 
+ * y postion.
+ * 
+ * @param {PIXI.Container} container  The container that holds all the game elems
+ * @param {array}          breadElems Array containing all the elements bread should interact with
+ * @param {array}          spreads    Array containing all the spread elems and an ID for them
+ * @param {PIXI.Sprite}    lever      PIXI.Sprite object for the toaster lever
+ * @param {object}         e          Mouse data
+ * 
+ * @returns {PIXI.Sprite} bread object
+ */
 function makeBread(container, breadElems, spreads, lever, e){
     if(this.bread){
         clearTimeout(this.bread.timerLoop);
         this.bread.destroy();
         this.score -= 10;
-        this.scoreText.text = `Score: ${this.score}`
-        this.scoreText.x = (0 + this.scoreText.width / 2); + this.score;
+        this.scoreText.text = `$: ${this.score}`
+        this.scoreText.x = (0 + this.scoreText.width / 2);
     }
-    const bread = new breadObj(e.data.global.x, e.data.global.y, this.loader.resources['bread1'].texture);
+    let breadBonus = this.upgradeStore ? this.upgradeStore.breadUpgrade.currentState * 20: null;
+    const bread = new breadObj(e.data.global.x, e.data.global.y, this.loader.resources['bread1'].texture, breadBonus);
     bread.mousedown = bread.dragStart;
     bread.mousemove = bread.dragMove;
     bread.mouseup = () => bread.dragEnd(breadElems, spreads, lever)
@@ -605,16 +983,40 @@ function makeBread(container, breadElems, spreads, lever, e){
     return bread;
 }
 
-function spawnKnife(container, spread, plate,e){
+/** Creates a knife object to spread topping on toast
+ * 
+ * This function creates a knife object if there is not one already. It sets the
+ * parent property of this knife to be the parent object and uses this object
+ * to get the correct texture for the parent clicked.
+ * 
+ * @param {PIXI.Container} container The container that holds all the game elems 
+ * @param {spreadObj}      parent    The parent object the player clicked on to fire this function
+ * @param {PIXI.Sprite}    plate     The plate object from the game
+ * @param {object}         e         Mouse Data
+ * 
+ * @returns {PIXI.Sprite} knife object
+ */
+function spawnKnife(container, parent, plate,e){
     if(this.knife == undefined){
-        const knife = new knifeObj(e.data.global.x, e.data.global.y, this.loader.resources[`knife_${spread.property}`].texture, spread);
+        const knife = new knifeObj(e.data.global.x, e.data.global.y, this.loader.resources[`knife_${parent.property}`].texture, parent);
         container.addChild(knife);
-        spread.useable = false;
+        parent.useable = false;
         if(this.bread != undefined) knife.mouseup = () => knife.dragEnd(this.bread, this.loader, plate);
         return knife
     }
 }
 
+/** make a new orderData object and display it to the player
+ * 
+ * get a random spread and random bread state, create an order data with these and
+ * then call the makeTexture function of the orderData to render the data to the
+ * screen. it then starts the timer.
+ * 
+ * @param {PIXI.Sprite} orderTV          The TV sprite object that will display the order
+ * @param {array}       chanceIndicators An array containing all the change indicator object
+ * 
+ * @returns null
+ */
 function makeOrder(orderTV, chanceIndicators){
     let randNumSpreads = (Math.floor(Math.random() * this.spreads.length));
     let randNumState = (Math.floor(Math.random() * 5)) + 2;    
@@ -625,9 +1027,28 @@ function makeOrder(orderTV, chanceIndicators){
     timerStart.bind(this)(chanceIndicators, orderTV);
 }
 
+/** start the timer using basic loop functions
+ * 
+ * @param {array}       chanceIndicators An array containing all the change indicator object
+ * @param {PIXI.Sprite} orderTV          The TV sprite object that will display the order
+ * 
+ * @returns null
+ */
 function timerStart(chanceIndicators, orderTV){                                                
     let loopMax = this.timer.textures.length - 1                                           
-    let loopCounter = 0;                                                       
+    let loopCounter = 0;
+    
+    /** change the texture on the timer and loop
+     * 
+     * Changes the texture of the timer and its state depending on the amount of
+     * times the function has looped. It also checks to see if the function should
+     * be looped again or if the timer is over and ends the round if the timer
+     * is over.
+     * 
+     * @alias timerStart~loop
+     * 
+     * @returns null
+     */
     let loop = () => {
         this.timer.texture = this.timer.textures[loopCounter];
         switch(loopCounter){
@@ -642,7 +1063,7 @@ function timerStart(chanceIndicators, orderTV){
 
         if(loopCounter == loopMax) endRound.bind(this)(chanceIndicators, orderTV);
         else if(loopCounter <= loopMax) {
-            this.timerLoop = setTimeout(loop, (this.timer.time / loopMax) * 1000);
+            this.timer.timeout = setTimeout(loop, (this.timer.remaining / loopMax) * 1000);
             loopCounter++;
         }
     }
@@ -650,10 +1071,22 @@ function timerStart(chanceIndicators, orderTV){
     
 }
 
+/** Checks the piece of toast made against the order specified and updates score
+ * 
+ * Checks properties of bread and ordet to compare. if the toasting is off by one you
+ * get half points for the toasting, and for every mistake you lose a chance.
+ * 
+ * @param {PIXI.Sprite} plate            The plate object
+ * @param {PIXI.Sprite} orderTV          The TV that shows the order
+ * @param {PIXI.Sprite} loaf             The loaf object
+ * @param {array}       chanceIndicators An array containing all the change indicator object
+ * 
+ * @returns null
+ */
 function checkScore(plate = null, orderTV = null, loaf = null, chanceIndicators = null){
     let updateScoreText = () => {
-        this.scoreText.text = `Score: ${this.score}`
-        this.scoreText.x = (0 + this.scoreText.width / 2); + this.score;
+        this.scoreText.text = `$: ${this.score}`
+        this.scoreText.x = (0 + this.scoreText.width / 2);
     }
     if(this.bread != undefined && plate){
         if(plate.containsPoint(this.bread) && this.bread.dragging == false){
@@ -665,13 +1098,15 @@ function checkScore(plate = null, orderTV = null, loaf = null, chanceIndicators 
             if(this.bread.property == this.order.toastSpreads) this.score += 40;
             else changeChanceIndicator.bind(this)(chanceIndicators);
 
+            this.score += this.upgradeStore.bread.upgradeState * 20;
+
             this.bread.destroy();
             this.bread = undefined;
             this.order.destroy();
             plate.interactive = false;
             updateScoreText();
             
-            clearTimeout(this.timerLoop);
+            clearTimeout(this.timer.timeout);
             
             let scoreFirstNum = this.score.toString()[0]
             if(scoreFirstNum / 5 == 1 && this.timer.time >= 20) this.timer.time -= 10;
@@ -683,6 +1118,13 @@ function checkScore(plate = null, orderTV = null, loaf = null, chanceIndicators 
     
 }
 
+/** destroy bread and order, make a new order. end game if out of chances
+ * 
+ * @param {array}       chanceIndicator all chance indicator objects
+ * @param {PIXI.Sprite} orderTV         orderTV object
+ * 
+ * @returns null
+ */
 function endRound(chanceIndicator, orderTV){
     this.timer.texture = this.loader.resources.timer_9.texture;
     if(this.bread || this.bread != null) this.bread.destroy();
@@ -694,11 +1136,24 @@ function endRound(chanceIndicator, orderTV){
     else setTimeout( () => makeOrder.bind(this)(orderTV, chanceIndicator), 1000);
 }
 
+/** change texture of next change indicator
+ * 
+ * @param {array} chanceIndicators array of chance indicator objects
+ * 
+ * @returns null
+ */
 function changeChanceIndicator(chanceIndicators){
     this.chances -= 1;
     if(this.chances >= 0)chanceIndicators[this.chances].texture = this.loader.resources.x_light.texture;
 }
 
+/** Destroys all objects and goes back to menu
+ * 
+ * Creates a window to show your score for the game. this will eventually be a
+ * scoreboard. it also has a button to return to menu which destroys all objectsm
+ * 
+ * @returns null
+ */
 function endGame(){
     this.game.interactive = false;
 
@@ -730,6 +1185,12 @@ function endGame(){
     restartButton.position.x = background.x + (background.width / 2 - restartButton.width / 2);
     restartButton.position.y = (background.y + background.height) - (restartButton.height * 1.25);
     restartButton.interactive = true;
+    /** destroy game container and go back to menu
+     * 
+     * @alias endGame~restartButton.mousedown
+     * 
+     * @returns null
+     */
     restartButton.mousedown = () => {
         this.game.destroy();
         popupCont.destroy();

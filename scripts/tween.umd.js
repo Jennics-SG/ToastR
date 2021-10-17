@@ -402,7 +402,6 @@
             this._startTime = 0;
             this._easingFunction = Easing.Linear.None;
             this._interpolationFunction = Interpolation.Linear;
-            // eslint-disable-next-line
             this._chainedTweens = [];
             this._onStartCallbackFired = false;
             this._id = Sequence.nextId();
@@ -430,7 +429,6 @@
             return this;
         };
         Tween.prototype.duration = function (d) {
-            if (d === void 0) { d = 1000; }
             this._duration = d;
             return this;
         };
@@ -568,17 +566,14 @@
             return this;
         };
         Tween.prototype.group = function (group) {
-            if (group === void 0) { group = mainGroup; }
             this._group = group;
             return this;
         };
         Tween.prototype.delay = function (amount) {
-            if (amount === void 0) { amount = 0; }
             this._delayTime = amount;
             return this;
         };
         Tween.prototype.repeat = function (times) {
-            if (times === void 0) { times = 0; }
             this._initialRepeat = times;
             this._repeat = times;
             return this;
@@ -588,21 +583,17 @@
             return this;
         };
         Tween.prototype.yoyo = function (yoyo) {
-            if (yoyo === void 0) { yoyo = false; }
             this._yoyo = yoyo;
             return this;
         };
         Tween.prototype.easing = function (easingFunction) {
-            if (easingFunction === void 0) { easingFunction = Easing.Linear.None; }
             this._easingFunction = easingFunction;
             return this;
         };
         Tween.prototype.interpolation = function (interpolationFunction) {
-            if (interpolationFunction === void 0) { interpolationFunction = Interpolation.Linear; }
             this._interpolationFunction = interpolationFunction;
             return this;
         };
-        // eslint-disable-next-line
         Tween.prototype.chain = function () {
             var tweens = [];
             for (var _i = 0; _i < arguments.length; _i++) {
