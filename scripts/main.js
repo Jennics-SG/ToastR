@@ -244,6 +244,25 @@ const toastR = function(){
         // Dragging physics end
     }
 
+    // CLass representing Timer. Extending PIXI.Sprite
+    const timerObj = class extends PIXI.Sprite{
+        constructor(x, y, time){
+            super(texture);
+            this.position.set(x, y);
+            this.time, this.remaining = time;
+            this.state = 'green';
+            this.textures = this.getTextures();
+        }
+
+        getTextures(){
+            let array = [];
+            for(let i = 1; i <= 9; i++){
+                array.push(loader.resources[`timer_${i}`].texture);
+            }
+            return array;
+        }
+    }
+
     this.app = new PIXI.Application({
         height: 720,
         width: 1280,
@@ -561,6 +580,17 @@ const toastR = function(){
         peanut.position.set(beans.x + butter.width * 1.2, butter.y);
         peanut.interactive = true;
         peanut.mousedown = (e) => makeKnife('peanut', e);
+        game.addChild(peanut);
+
+        const dial = new PIXI.Sprite.from(loader.resources.dial1.texture);
+        dial.anchor.set(0.5);
+        dial.position.set(toaster.x, toaster.y + dial.height / 2);
+        dial.zIndex = 3;
+        dial.interactive = true;
+        dial.mousedown = toaster.changeSetting(dial);
+        game.addChild(dial);
+
+        this.timer = new timerObj(orderTV.x, orderTV.y, 60)
     }
 
     // Checks if two game elements are collidiing
