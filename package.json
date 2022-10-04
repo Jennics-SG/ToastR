@@ -1,0 +1,29 @@
+{
+  "name": "toastr",
+  "version": "2.0.0",
+  "description": "A web game about making toast",
+  "main": "main.js",
+  "scripts": {
+    "start": "nodemon main.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Jennics-SG/ToastR.git"
+  },
+  "author": "Jimy Houlbrook",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Jennics-SG/ToastR/issues"
+  },
+  "homepage": "https://github.com/Jennics-SG/ToastR#readme",
+  "dependencies": {
+    "ejs": "^3.1.8",
+    "express": "^4.18.1",
+    "pixi.js": "^6.5.5",
+    "webpack": "^5.74.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.20",
+    "webpack-cli": "^4.10.0"
+  }
+}
