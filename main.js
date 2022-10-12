@@ -20,16 +20,8 @@ const server = () => {
     sendFiles();
 
     this.app.get('/', (req, res) => {
-        switch(isOnMobile(req.headers['user-agent'])){
-            case true:
-                console.log('User has connected on Mobile');
-                res.send('Mobile site pending');
-                break;
-            case false:
-                console.log('User has connected on Desktop');
-                res.render('app');
-        }
-        
+        console.log('User has connected on Desktop');
+        res.render('app');     
     });
 
     // Send JS file when requested
@@ -68,7 +60,7 @@ const sendFiles = () => {
     const filesArray = filesJSON.files
 
     for(const file of filesArray){
-        this.app.get(`/assets/${file[0]}`, (req, res) => {
+        this.app.get(`/assets/${file[1]}`, (req, res) => {
             res.sendFile(path.join(__dirname, `./src/assets/${file[1]}`));
         });
     }
