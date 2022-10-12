@@ -5,12 +5,15 @@
  */
 
 import { Menu } from "./worlds/menu";
+import { Game } from "./worlds/game/game";
 
+// Class representing world manager, loads and deletes worlds
 export class WorldManager{
     constructor(){
         this.currentWorld = undefined;
     }
 
+    // Deletes current world if it exists
     deleteWorld(){
         if(!this.currentWorld)
             return true;
@@ -20,6 +23,7 @@ export class WorldManager{
         return true;
     }
 
+    // Loads world depending on string
     loadWord(string, loader){
         if(!string)
             return false
@@ -32,7 +36,7 @@ export class WorldManager{
                 break;
             
             case "game":
-                console.log('game');
+                this.currentWorld = Game(loader);
                 break;
         }
     }

@@ -28,6 +28,7 @@ const toastR = function() {
     // World Manager for the game
     const worldManger = new WorldManager();
     
+    // Initialise the app
     const init = () => {
         // Add app to DOM content
         const div = document.getElementById('game');
@@ -56,6 +57,7 @@ const toastR = function() {
         loader.load();
     }
 
+    // Main function for game
     const main = () => {
         switch(this.gameState){
             case "menu":
@@ -67,9 +69,6 @@ const toastR = function() {
                     this.gameState = "game";
                     main()
                 }
-
-                // Add to canvas
-                canvas.addChild(worldManger.currentWorld.cont);
                 break;
             
             case "game":
@@ -77,6 +76,7 @@ const toastR = function() {
                 worldManger.loadWord(this.gameState, loader);
                 break;
         }
+        canvas.addChild(worldManger.currentWorld.cont);
     }
 
     init();
