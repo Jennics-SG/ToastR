@@ -23,7 +23,7 @@ export class breadObj extends Sprite{
         this.state = 1;
         this.property = "bare";
         this.interactive = true;
-        this.dragging = false;
+        this.dragging = true;
 
         this.pointerdown = this.dragStart;
         this.pointermove = this.dragMove;
