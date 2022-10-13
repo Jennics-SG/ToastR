@@ -48,7 +48,7 @@ const toastR = function() {
          *  onComplete: change gamestate and runs "main()" function
          *  load:       Load files
          */
-        loader.onProgress.add(function (e) { console.log(e.progress); });
+        loader.onProgress.add(e => { console.log(e.progress); });
         loader.onError.add(function (e) { console.error(`ERR: ${e.message}`); });
         loader.onComplete.add(() => {
             this.gameState = "menu";
@@ -76,7 +76,7 @@ const toastR = function() {
                 worldManger.loadWord(this.gameState, loader);
                 break;
         }
-        canvas.addChild(worldManger.currentWorld.cont);
+        canvas.addChild(worldManger.currentWorld);;
     }
 
     init();

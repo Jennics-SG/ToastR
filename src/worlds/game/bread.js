@@ -34,12 +34,14 @@ export class breadObj extends Sprite{
     dragStart(e){
         this.x = e.data.global.x;
         this.y = e.data.global.y;
+        
         this.dragging = true;
     }
 
     dragMove(e){
         if(!this.dragging)
             return
+
         this.x = e.data.global.x;
         this.y = e.data.global.y;
     }
@@ -47,6 +49,7 @@ export class breadObj extends Sprite{
     dragEnd(e){
         if(!this.dragging)
             return
+
         this.dragging = false;
     }
 

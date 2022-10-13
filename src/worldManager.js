@@ -17,9 +17,8 @@ export class WorldManager{
     deleteWorld(){
         if(!this.currentWorld)
             return true;
-
-        this.currentWorld.cont.destroy()
-        delete this.currentWorld;
+        
+        this.currentWorld.destroy();
         return true;
     }
 
@@ -32,11 +31,11 @@ export class WorldManager{
 
         switch(string){
             case "menu":
-                this.currentWorld = Menu(loader);
+                this.currentWorld = new Menu(loader);
                 break;
             
             case "game":
-                this.currentWorld = Game(loader);
+                this.currentWorld = new Game(loader);
                 break;
         }
     }

@@ -15,7 +15,8 @@ import { breadObj } from './bread';
  * @param {PIXI.Loader} loader 
  * @returns object with world variables
  */
-export const Game = function(loader){
+/** OLD CODE FOR REFERENCE
+export const awd = function(loader){
     const container = new PIXI.Container();
 
     let bread = null;
@@ -34,7 +35,7 @@ export const Game = function(loader){
     loaf.interactive = true;
     loaf.pointerdown = e => {
         if(bread)
-            bread = null;
+            bread.destroy();
 
         bread = new breadObj(
             e.data.global.x,
@@ -50,4 +51,40 @@ export const Game = function(loader){
     }
 
     return worldObject;
+}
+*/
+
+export const Game = class extends PIXI.Container{
+    constructor(loader){
+        super();
+        this.loader = loader;
+
+        this.environment = {
+            variables: {
+                score: 0,
+                chances: 3,
+            },
+
+            objects: {
+                bread: null,
+            },
+        }
+
+        " LOAD WORLD OBJECTS START "
+
+        const background = new PIXI.Sprite.from(
+            this.loader.resources.background.texture
+        );
+        this.addChild(background);
+
+        const orderTV = new PIXI.Sprite.from(
+            this.loader.resources.orderTV.texture
+        );
+        orderTV.position.set(orderTV.width / 4, orderTV.height / 4);
+        this.addChild(orderTV);
+        
+        // Toaster object, going to make file quickly
+
+        " LOAD WORLD OBJECTS END "
+    }
 }
