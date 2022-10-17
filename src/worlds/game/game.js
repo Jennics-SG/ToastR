@@ -6,6 +6,7 @@
 
 import * as PIXI from 'pixi.js'
 import { breadObj } from './bread';
+import { toasterObj } from './toaster';
 
 /** ToastR.game.Game
  * 
@@ -13,46 +14,7 @@ import { breadObj } from './bread';
  *  delta loop for game
  * 
  * @param {PIXI.Loader} loader 
- * @returns object with world variables
  */
-/** OLD CODE FOR REFERENCE
-export const awd = function(loader){
-    const container = new PIXI.Container();
-
-    let bread = null;
-
-    const background = new PIXI.Sprite.from(
-        loader.resources.background.texture
-    );
-    container.addChild(background);
-
-    const loaf = new PIXI.Sprite.from(loader.resources.loaf.texture)
-    loaf.scale.set(0.8);
-    loaf.position.set(
-        (background.width / 2 - (loaf.width * 2) / 2),
-        (background.height / 1.75) - loaf.height / 2
-    );
-    loaf.interactive = true;
-    loaf.pointerdown = e => {
-        if(bread)
-            bread.destroy();
-
-        bread = new breadObj(
-            e.data.global.x,
-            e.data.global.y,
-            loader.resources.bread1.texture
-        );
-        container.addChild(bread);
-    }
-    container.addChild(loaf);
-
-    const worldObject = {
-        cont: container,
-    }
-
-    return worldObject;
-}
-*/
 
 export const Game = class extends PIXI.Container{
     constructor(loader){
@@ -83,7 +45,22 @@ export const Game = class extends PIXI.Container{
         orderTV.position.set(orderTV.width / 4, orderTV.height / 4);
         this.addChild(orderTV);
         
-        // Toaster object, going to make file quickly
+        
+        // Make toaster
+        const dialTextures = new Array()
+
+        console.log(this.loader.resources)
+
+        for(let i = 1; i < 6; i++)
+            dialTextures.push(this.loader.resources[`dial${i}`].texture);
+
+        const toaster = new toasterObj(
+            (background.height / 20) * 3,
+            (background.height) - this.loader.resources.toaster_up.texture.height * 1.5,
+            this.loader.resources.toaster_up.texture,
+            this.loader.resources.lever.texture, dialTextures
+        );
+        this.addChild(toaster);
 
         " LOAD WORLD OBJECTS END "
     }

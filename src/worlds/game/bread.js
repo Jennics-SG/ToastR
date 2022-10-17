@@ -20,11 +20,13 @@ export class breadObj extends Sprite{
         super(texture);
         this.anchor.set(0.5);
         this.position.set(x, y);
+        this.scale.set(0.8);
         this.state = 1;
         this.property = "bare";
         this.interactive = true;
         this.dragging = true;
 
+        // Interactables
         this.pointerdown = this.dragStart;
         this.pointermove = this.dragMove;
         this.pointerup = this.dragEnd;
