@@ -13,7 +13,7 @@ import { toasterObj } from './toaster';
  *  Load assets into game and set up interactivity, will also contain
  *  delta loop for game
  * 
- * @param {PIXI.Loader} loader 
+ * @param {PIXI.Loader} loader Loader containing assets for the game
  */
 
 export const Game = class extends PIXI.Container{
@@ -34,34 +34,55 @@ export const Game = class extends PIXI.Container{
 
         " LOAD WORLD OBJECTS START "
 
+        // Create background at 0,0
         const background = new PIXI.Sprite.from(
             this.loader.resources.background.texture
         );
         this.addChild(background);
 
+        // Create order TV at otX and otY
         const orderTV = new PIXI.Sprite.from(
             this.loader.resources.orderTV.texture
         );
-        orderTV.position.set(orderTV.width / 4, orderTV.height / 4);
+        const otx = orderTV.width / 4;
+        const oty = orderTV.height / 4;
+        orderTV.position.set(otx, oty);
         this.addChild(orderTV);
         
-        
-        // Make toaster
+        // Make toaster start
         const dialTextures = new Array()
-
-        console.log(this.loader.resources)
 
         for(let i = 1; i < 6; i++)
             dialTextures.push(this.loader.resources[`dial${i}`].texture);
+        
+        const tx = (background.height / 20) * 3;
+        const ty = (background.height) - this.loader.resources.toaster_up.height * 1.5;
 
         const toaster = new toasterObj(
-            (background.height / 20) * 3,
-            (background.height) - this.loader.resources.toaster_up.texture.height * 1.5,
-            this.loader.resources.toaster_up.texture,
+            tx, ty, this.loader.resources.toaster_up.texture,
             this.loader.resources.lever.texture, dialTextures
         );
         this.addChild(toaster);
+        // Make toaster end
+
+        const loaf = new PIXI.Sprite.from(this.loader.resources.loaf.texture);
+        loaf.scale.set(0.8);
+
+        const lx = (background.width / 2) - loaf.width;
+        const ly = (background.height / 1.75) - (loaf.height / 2);
+
+        loaf.position.set(lx, ly);
+        
+        // Make loaf create piece of bread when clicked
+        loaf.interactive = true;
+        loaf.mousedown = e => this.makeBread();
+        this.addChild(loaf);
+
 
         " LOAD WORLD OBJECTS END "
+    }
+
+    makeBread(){
+        console.log('bread');
     }
 }

@@ -10,9 +10,9 @@ import { Sprite } from "pixi.js";
  * 
  *  Extends PIXI.Sprite to keep the metods while allowing custom methods too
  * 
- *  @param{Number}          x           X pos of bread
- *  @param{Number}          y           Y pos of bread
- *  @param{loader.resource} texture     Texture of bread
+ *  @param {Number}          x           X pos of bread
+ *  @param {Number}          y           Y pos of bread
+ *  @param {Loader.resource} texture     Texture of bread
  */
 export class breadObj extends Sprite{
     constructor(x = 0, y = 0, texture){
