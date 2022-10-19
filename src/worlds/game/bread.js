@@ -21,6 +21,7 @@ export class breadObj extends Sprite{
         this.anchor.set(0.5);
         this.position.set(x, y);
         this.scale.set(0.8);
+        this.zIndex = 0;
         this.state = 1;
         this.property = "bare";
         this.interactive = true;

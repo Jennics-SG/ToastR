@@ -27,6 +27,7 @@ export const toasterObj = class extends PIXI.Container{
 
         " MAKE TOASTER ELEMENTS START "
         this.sortableChildren = true;
+        this.zIndex = 1;
 
         const toaster = new PIXI.Sprite.from(toasterTexture);
         toaster.position.set(x, y);

@@ -21,6 +21,8 @@ export const Game = class extends PIXI.Container{
         super();
         this.loader = loader;
 
+        this.sortableChildren = true;
+
         this.environment = {
             variables: {
                 score: 0,
@@ -55,12 +57,13 @@ export const Game = class extends PIXI.Container{
         for(let i = 1; i < 6; i++)
             dialTextures.push(this.loader.resources[`dial${i}`].texture);
         
-        const tx = (background.height / 20) * 3;
-        const ty = (background.height) - this.loader.resources.toaster_up.height * 1.5;
+        const toasterTexture = this.loader.resources.toaster_up.texture
+
+        const tx = (background.height / 20);
+        const ty = (background.height) - toasterTexture.height * 1.5;
 
         const toaster = new toasterObj(
-            tx, ty, this.loader.resources.toaster_up.texture,
-            this.loader.resources.lever.texture, dialTextures
+            tx, ty, toasterTexture, this.loader.resources.lever.texture, dialTextures
         );
         this.addChild(toaster);
         // Make toaster end
@@ -68,21 +71,32 @@ export const Game = class extends PIXI.Container{
         const loaf = new PIXI.Sprite.from(this.loader.resources.loaf.texture);
         loaf.scale.set(0.8);
 
-        const lx = (background.width / 2) - loaf.width;
+        const lx = (background.width / 2) - loaf.width / 1.25;
         const ly = (background.height / 1.75) - (loaf.height / 2);
 
         loaf.position.set(lx, ly);
         
         // Make loaf create piece of bread when clicked
         loaf.interactive = true;
-        loaf.mousedown = e => this.makeBread();
+        loaf.pointerdown = e => {
+            const x = e.data.global.x;
+            const y = e.data.global.y;
+            this.makeBread(x, y)
+        }
         this.addChild(loaf);
 
 
         " LOAD WORLD OBJECTS END "
     }
 
-    makeBread(){
-        console.log('bread');
+    makeBread(x, y){
+        if(this.environment.objects.bread){
+            this.environment.objects.bread.destroy();
+            this.environment.variables.score -= 10;
+        }
+
+        const bread = new breadObj(x, y, this.loader.resources.bread1.texture);
+        this.addChild(bread);
+        this.environment.objects.bread = bread;
     }
 }
