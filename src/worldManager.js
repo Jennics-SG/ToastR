@@ -13,7 +13,9 @@ export class WorldManager{
         this.currentWorld = undefined;
     }
 
-    // Deletes current world if it exists
+    /** Delete current world if exists
+     * @returns bool
+     */
     deleteWorld(){
         if(!this.currentWorld)
             return true;
@@ -22,8 +24,14 @@ export class WorldManager{
         return true;
     }
 
-    // Loads world depending on string
-    loadWord(string, loader){
+    /** Load the world required for application
+     * 
+     * @param {String}                  string  World to be loaded 
+     * @param {PIXI.loader}             loader  PIXI loader containing game files
+     * @param {PIXI.Application.ticker} ticker  PIXI ticker
+     * @returns null
+     */
+    loadWord(string, loader, ticker){
         if(!string)
             return false
 
@@ -36,6 +44,7 @@ export class WorldManager{
             
             case "game":
                 this.currentWorld = new Game(loader);
+                ticker.add(this.currentWorld.delta.bind(this.currentWorld));
                 break;
         }
     }

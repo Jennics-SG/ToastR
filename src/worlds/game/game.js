@@ -4,9 +4,10 @@
  *  Date:   12/10/22
  */
 
-import * as PIXI from 'pixi.js'
+import * as PIXI from 'pixi.js';
 import { breadObj } from './bread';
 import { toasterObj } from './toaster';
+import { isWithin } from './utils';
 
 /** ToastR.game.Game
  * 
@@ -31,18 +32,20 @@ export const Game = class extends PIXI.Container{
 
             objects: {
                 bread: null,
+                toaster: null,
             },
         }
 
         " LOAD WORLD OBJECTS START "
 
-        // Create background at 0,0
+        // Create background at 0,0 ---------------------------------------------------
         const background = new PIXI.Sprite.from(
             this.loader.resources.background.texture
         );
+
         this.addChild(background);
 
-        // Create order TV at otX and otY
+        // Create order TV at otX and otY ----------------------------------------------
         const orderTV = new PIXI.Sprite.from(
             this.loader.resources.orderTV.texture
         );
@@ -51,23 +54,43 @@ export const Game = class extends PIXI.Container{
         orderTV.position.set(otx, oty);
         this.addChild(orderTV);
         
-        // Make toaster start
+        // Make toaster ----------------------------------------------------------------
         const dialTextures = new Array()
 
         for(let i = 1; i < 6; i++)
             dialTextures.push(this.loader.resources[`dial${i}`].texture);
         
-        const toasterTexture = this.loader.resources.toaster_up.texture
-
+        const toasterUpTexture = this.loader.resources.toaster_up.texture;
+        const toasterDownTexture = this.loader.resources.toaster_down.texture;
         const tx = (background.height / 20);
-        const ty = (background.height) - toasterTexture.height * 1.5;
+        const ty = (background.height) - toasterUpTexture.height * 1.5;
 
         const toaster = new toasterObj(
-            tx, ty, toasterTexture, this.loader.resources.lever.texture, dialTextures
+            tx, ty, toasterUpTexture, toasterDownTexture,
+            this.loader.resources.lever.texture, dialTextures
         );
-        this.addChild(toaster);
-        // Make toaster end
 
+        // Set toaster pointer events
+        toaster.elems.body.pointerdown = () =>
+            toaster.toastBread(this.environment.objects.bread)
+        toaster.elems.lever.pointerdown = () => 
+            toaster.toastBread(this.environment.objects.bread)
+
+        this.addChild(toaster);
+        this.environment.objects.toaster = toaster;
+ 
+        // Make bread texture array ----------------------------------------------------
+        this.breadTextures = new Array
+        const spreads = ["beans", "butter", "nut"]
+
+        for(let i = 1; i <= 6; i++){
+            this.breadTextures.push(this.loader.resources[`bread${i}`])
+            for(const spread of spreads){
+                this.breadTextures.push(this.loader.resources[`bread${i}_${spread}`])
+            }
+        }
+
+        // Make Loaf -------------------------------------------------------------------
         const loaf = new PIXI.Sprite.from(this.loader.resources.loaf.texture);
         loaf.scale.set(0.8);
 
@@ -89,14 +112,32 @@ export const Game = class extends PIXI.Container{
         " LOAD WORLD OBJECTS END "
     }
 
+    /** Make bread at X, Y
+     * @param {Number} x 
+     * @param {Number} y 
+     */
     makeBread(x, y){
         if(this.environment.objects.bread){
             this.environment.objects.bread.destroy();
             this.environment.variables.score -= 10;
         }
 
-        const bread = new breadObj(x, y, this.loader.resources.bread1.texture);
+        const bread = new breadObj(x, y, this.breadTextures);
         this.addChild(bread);
         this.environment.objects.bread = bread;
+    }
+
+    // Gameloop, runs every frame
+    // Because this fuction is called from a different function, this must be bound
+    delta(){
+        // Check if bread exists before testing its colissions
+        if(this.environment.objects.bread){
+            if(isWithin(
+                this.environment.objects.bread, this.environment.objects.toaster)
+                && !this.environment.objects.bread.dragging)
+                this.environment.objects.toaster.setInteractive(true)
+            else
+                this.environment.objects.toaster.setInteractive(false)
+        }
     }
 }

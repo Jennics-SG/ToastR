@@ -5,6 +5,7 @@
  */
 
 import * as PIXI from 'pixi.js'
+const TWEEN = require('@tweenjs/tween.js');
 
 /** Class representing toaster object
  * 
@@ -18,18 +19,20 @@ import * as PIXI from 'pixi.js'
  * @param {Array}               textureArray    Array of textures for the dial
  */
 export const toasterObj = class extends PIXI.Container{
-    constructor(x, y, toasterTexture, leverTexture, textureArray){
+    constructor(x, y, toasterUpTexture, toasterDownTexture, leverTexture, textureArray){
         super();
 
         this.setting = 1;
 
         let dialTextures = textureArray;
 
+        this.toasterTextures = [toasterUpTexture, toasterDownTexture]
+
         " MAKE TOASTER ELEMENTS START "
         this.sortableChildren = true;
         this.zIndex = 1;
 
-        const toaster = new PIXI.Sprite.from(toasterTexture);
+        const toaster = new PIXI.Sprite.from(this.toasterTextures[0]);
         toaster.position.set(x, y);
         this.addChild(toaster);
         
@@ -62,16 +65,55 @@ export const toasterObj = class extends PIXI.Container{
             lever: protoLever,
             dial: protoDial
         }
-        
+
+        // Create bounds object that holds x and y position of container
+        this.bounds = this.getBounds();
+    }
+
+    // Make body and lever interactive to make sure dial
+    // still works when bread is in toaster
+    setInteractive(bool){
+        this.elems.lever.interactive = bool;
+        this.elems.body.interactive = bool;
     }
 
     /** Change the setting of toaster
-     * 
      * @param {Array} textures array of textures of the dial
      */
     changeSetting(textures){
         this.setting = (this.setting + 1) % 6
         if(this.setting == 0) this.setting = 1;
         this.elems.dial.texture = textures[this.setting - 1];
+    }
+
+    /** yo, im busy ill comment this later
+     * 
+     * @param {*} bread 
+     */
+    async toastBread(bread){
+        const startToastingAnims = (elem, newPos, time) => {
+            return new Promise(resolve => {
+                let transform = {y: elem.y};
+                let popDown = new TWEEN.Tween(transform)
+                    .to({y: newPos}, time)
+                    .onUpdate(() => elem.y = transform.y);
+                popDown.start();
+                resolve();
+            });
+        }
+
+        bread.interactive = false;
+        bread.x = this.bounds.x + (this.bounds.width / 2);
+        bread.y = this.bounds.y;
+        this.elems.body.texture = this.toasterTextures[1];
+        this.setInteractive(false);
+
+        // Runs both functions simultaneously
+        await Promise.allSettled(
+            [startToastingAnims(bread, this.bounds.y + 50, 200)],
+            [startToastingAnims(this.elems.lever, this.bounds.y + (this.bounds.height / 1.5), 250)]
+        );
+
+        await bread.changeTexture(this.setting)
     }
 }

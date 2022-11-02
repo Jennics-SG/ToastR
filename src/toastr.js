@@ -6,6 +6,7 @@
  */
 import * as PIXI from 'pixi.js';
 import { WorldManager } from './worldManager.js';
+const TWEEN = require('@tweenjs/tween.js');
 
 const toastR = function() {
     // Application to hold the game
@@ -15,6 +16,8 @@ const toastR = function() {
         magin: 10,
         backgroundColor: 0x2f9da3
     });
+
+    this.app.ticker.add(animate.bind(this));
 
     // Game State
     this.gameState = "loading";
@@ -43,10 +46,10 @@ const toastR = function() {
 
         /** Loader functions & callbacks
          *  
-         *  onProgress: Log progress to console
-         *  onError:    Log error to the console
-         *  onComplete: change gamestate and runs "main()" function
-         *  load:       Load files
+         *  @callback onProgress: Log progress to console
+         *  @callback onError:    Log error to the console
+         *  @callback onComplete: change gamestate and runs "main()" function
+         *  @function load:       Load files
          */
         loader.onProgress.add(e => { console.log(e.progress); });
         loader.onError.add(function (e) { console.error(`ERR: ${e.message}`); });
@@ -73,13 +76,17 @@ const toastR = function() {
             
             case "game":
                 // Load game
-                worldManger.loadWord(this.gameState, loader);
+                worldManger.loadWord(this.gameState, loader, this.app.ticker);
                 break;
         }
         canvas.addChild(worldManger.currentWorld);;
     }
 
     init();
+}
+
+function animate(){
+    TWEEN.update(this.app.ticker.lastTime);
 }
 
 document.addEventListener('DOMContentLoaded', toastR)

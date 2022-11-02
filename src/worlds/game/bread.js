@@ -15,9 +15,9 @@ import { Sprite } from "pixi.js";
  *  @param {Loader.resource} texture     Texture of bread
  */
 export class breadObj extends Sprite{
-    constructor(x = 0, y = 0, texture){
+    constructor(x = 0, y = 0, textures){
         // Set class variables
-        super(texture);
+        super(textures[0].texture);
         this.anchor.set(0.5);
         this.position.set(x, y);
         this.scale.set(0.8);
@@ -26,6 +26,7 @@ export class breadObj extends Sprite{
         this.property = "bare";
         this.interactive = true;
         this.dragging = true;
+        this.textures = textures;
 
         // Interactables
         this.pointerdown = this.dragStart;
@@ -57,4 +58,27 @@ export class breadObj extends Sprite{
     }
 
     " DRAGGING PHYSICS END "
+
+    /** Create a loop to change the bread texture every second while "toasting"
+     * 
+     * @param {Number} setting  Setting of the toaster, dictates how many iteration the loop runs for 
+     * @returns Promise
+     */
+    changeTexture(setting){
+        let i = 1;
+        return new Promise((resolve) => {
+            let loop = () =>{
+                console.log('loop');
+                this.state ++
+
+                this.texture = this.textures[(this.state - 1) * 4].texture;
+                if(this.state == 6 || i >= setting) resolve();
+                else if(i <= setting){
+                    i++;
+                    setTimeout(loop, 1000);
+                }
+            }
+            setTimeout(loop, 1000);
+        })
+    }
 }
