@@ -5,9 +5,9 @@
  */
 
 import * as PIXI from 'pixi.js';
-import { breadObj } from './bread';
-import { toasterObj } from './toaster';
-import { isWithin } from './utils';
+import { Bread } from './bread';
+import { Toaster } from './toaster';
+import { Utilities } from './utils';
 
 /** ToastR.game.Game
  * 
@@ -65,7 +65,7 @@ export const Game = class extends PIXI.Container{
         const tx = (background.height / 20);
         const ty = (background.height) - toasterUpTexture.height * 1.5;
 
-        const toaster = new toasterObj(
+        const toaster = new Toaster(
             tx, ty, toasterUpTexture, toasterDownTexture,
             this.loader.resources.lever.texture, dialTextures
         );
@@ -122,7 +122,7 @@ export const Game = class extends PIXI.Container{
             this.environment.variables.score -= 10;
         }
 
-        const bread = new breadObj(x, y, this.breadTextures);
+        const bread = new Bread(x, y, this.breadTextures);
         this.addChild(bread);
         this.environment.objects.bread = bread;
     }
@@ -132,7 +132,7 @@ export const Game = class extends PIXI.Container{
     delta(){
         // Check if bread exists before testing its colissions
         if(this.environment.objects.bread){
-            if(isWithin(
+            if(Utilities.isWithin(
                 this.environment.objects.bread, this.environment.objects.toaster)
                 && !this.environment.objects.bread.dragging)
                 this.environment.objects.toaster.setInteractive(true)

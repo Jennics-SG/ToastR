@@ -14,7 +14,7 @@ import { Sprite } from "pixi.js";
  *  @param {Number}          y           Y pos of bread
  *  @param {Loader.resource} texture     Texture of bread
  */
-export class breadObj extends Sprite{
+export class Bread extends Sprite{
     constructor(x = 0, y = 0, textures){
         // Set class variables
         super(textures[0].texture);
@@ -68,7 +68,6 @@ export class breadObj extends Sprite{
         let i = 1;
         return new Promise((resolve) => {
             let loop = () =>{
-                console.log('loop');
                 this.state ++
 
                 this.texture = this.textures[(this.state - 1) * 4].texture;

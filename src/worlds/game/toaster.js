@@ -18,7 +18,7 @@ const TWEEN = require('@tweenjs/tween.js');
  * @param {PIXI.Loader.texture} leverTexture    Texture of the lever for the toaster
  * @param {Array}               textureArray    Array of textures for the dial
  */
-export const toasterObj = class extends PIXI.Container{
+export const Toaster = class extends PIXI.Container{
     constructor(x, y, toasterUpTexture, toasterDownTexture, leverTexture, textureArray){
         super();
 
@@ -28,7 +28,7 @@ export const toasterObj = class extends PIXI.Container{
 
         this.toasterTextures = [toasterUpTexture, toasterDownTexture]
 
-        " MAKE TOASTER ELEMENTS START "
+        // MAKE TOASTER ELEMENTS START -------------------------------------------------
         this.sortableChildren = true;
         this.zIndex = 1;
 
@@ -70,8 +70,10 @@ export const toasterObj = class extends PIXI.Container{
         this.bounds = this.getBounds();
     }
 
-    // Make body and lever interactive to make sure dial
-    // still works when bread is in toaster
+    /** Set the toasters interactive used for toasting start
+     * 
+     * @param {boolean} bool which interactive should be set to 
+     */
     setInteractive(bool){
         this.elems.lever.interactive = bool;
         this.elems.body.interactive = bool;
@@ -86,34 +88,72 @@ export const toasterObj = class extends PIXI.Container{
         this.elems.dial.texture = textures[this.setting - 1];
     }
 
-    /** yo, im busy ill comment this later
+    /** Contains all functions for toasting animations and runs them
      * 
-     * @param {*} bread 
+     * @param {Bread} bread     Current bread object
      */
     async toastBread(bread){
-        const startToastingAnims = (elem, newPos, time) => {
+        /** Toasting animations
+         * 
+         *  This function takes the element and moves it to newPos over time 
+         * 
+         * @param {PIXI.Container}  elem    Element to be moved 
+         * @param {number}          newPos  New position of element
+         * @param {number}          time    Time animation should take
+         * @returns 
+         */
+        const toastingAnims = (elem, newPos, time) => {
             return new Promise(resolve => {
                 let transform = {y: elem.y};
-                let popDown = new TWEEN.Tween(transform)
+                let animation = new TWEEN.Tween(transform)
                     .to({y: newPos}, time)
                     .onUpdate(() => elem.y = transform.y);
-                popDown.start();
+                animation.start();
                 resolve();
             });
         }
 
+        // Works the same as toastingAnims
+        // Own function to chain two tweens togethn
+        const finToastingBread = (elem, newPos) => {
+            return new Promise((resolve) => {
+                let transform = {y: elem.y};
+                let popUp = new TWEEN.Tween(transform)
+                    .to({y: newPos}, 250)
+                    .onUpdate(() => elem.y = transform.y);
+
+                let fallDown = new TWEEN.Tween(transform)
+                    .to({y: this.bounds.y}, 150)
+                    .onUpdate(() => elem.y = transform.y)
+
+                popUp.chain(fallDown);
+                popUp.start();
+                resolve();
+            })
+        }
+
+        // Move the bread to the starting toasting position
+        // Set interactive to false so users can't move the bread while toasting
         bread.interactive = false;
         bread.x = this.bounds.x + (this.bounds.width / 2);
         bread.y = this.bounds.y;
         this.elems.body.texture = this.toasterTextures[1];
         this.setInteractive(false);
 
-        // Runs both functions simultaneously
-        await Promise.allSettled(
-            [startToastingAnims(bread, this.bounds.y + 50, 200)],
-            [startToastingAnims(this.elems.lever, this.bounds.y + (this.bounds.height / 1.5), 250)]
-        );
+        // Runs two instances of toastingAnims concurrently on the lever and bread
+        await Promise.allSettled([
+            toastingAnims(bread, this.bounds.y + 50, 250),
+            toastingAnims(this.elems.lever, this.bounds.y + (this.bounds.height / 1.5), 250)
+        ]);
 
-        await bread.changeTexture(this.setting)
+        await bread.changeTexture(this.setting);
+
+        await Promise.allSettled([
+            finToastingBread(bread, this.bounds.y - 50),
+            toastingAnims(this.elems.lever, this.bounds.y + this.bounds.height / 4, 250)
+        ]);
+
+        bread.interactive = true;
+        this.setInteractive(true);
     }
 }
