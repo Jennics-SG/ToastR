@@ -8,6 +8,7 @@ import * as PIXI from 'pixi.js';
 import { Bread } from './bread';
 import { Toaster } from './toaster';
 import { Utilities } from './utils';
+import { Spread } from './spread';
 
 /** ToastR.game.Game
  * 
@@ -24,7 +25,7 @@ export const Game = class extends PIXI.Container{
 
         this.sortableChildren = true;
 
-        this.environment = {
+        this.env = {
             variables: {
                 score: 0,
                 chances: 3,
@@ -33,6 +34,7 @@ export const Game = class extends PIXI.Container{
             objects: {
                 bread: null,
                 toaster: null,
+                knife: null,
             },
         }
 
@@ -72,12 +74,12 @@ export const Game = class extends PIXI.Container{
 
         // Set toaster pointer events
         toaster.elems.body.pointerdown = () =>
-            toaster.toastBread(this.environment.objects.bread)
+            toaster.toastBread(this.env.objects.bread)
         toaster.elems.lever.pointerdown = () => 
-            toaster.toastBread(this.environment.objects.bread)
+            toaster.toastBread(this.env.objects.bread)
 
         this.addChild(toaster);
-        this.environment.objects.toaster = toaster;
+        this.env.objects.toaster = toaster;
  
         // Make bread texture array ----------------------------------------------------
         this.breadTextures = new Array
@@ -108,36 +110,72 @@ export const Game = class extends PIXI.Container{
         }
         this.addChild(loaf);
 
+        // Make Chopping Board ---------------------------------------------------------
+        const cbTexture = this.loader.resources.choppingBoard.texture;
+        const choppingBoard = new PIXI.Sprite.from(cbTexture);
+
+        const cbX = background.width / 2;
+        const cbY = background.height / 1.4;
+        choppingBoard.position.set(cbX, cbY);
+        this.addChild(choppingBoard);
+
+        // Make Spreads ----------------------------------------------------------------
+        const bX = choppingBoard.x + this.loader.resources.butter.texture.width;
+        const bY = background.height / 2;
+
+        const butterTexture = this.loader.resources.butter.texture;
+        const butterKnifeTexture = this.loader.resources.knife_butter.texture;
+
+        const butter = new Spread(bX, bY, butterTexture, butterKnifeTexture, 'butter');
+        butter.pointerdown = e => {
+            const x = e.data.global.x;
+            const y = e.data.global.y;
+            butter.makeKnife.bind(butter)(x, y, this);
+        }
+        this.addChild(butter);
 
         " LOAD WORLD OBJECTS END "
     }
 
     /** Make bread at X, Y
+     *  This function is the pointerdown event for loaf. it is 
+     *  in this file to allow easier manipulation of this.
+     * 
      * @param {Number} x 
      * @param {Number} y 
      */
     makeBread(x, y){
-        if(this.environment.objects.bread){
-            this.environment.objects.bread.destroy();
-            this.environment.variables.score -= 10;
+        if(this.env.objects.bread){
+            this.env.objects.bread.destroy();
+            this.env.objects.bread = null
+            this.env.variables.score -= 10;
         }
 
         const bread = new Bread(x, y, this.breadTextures);
         this.addChild(bread);
-        this.environment.objects.bread = bread;
+        this.env.objects.bread = bread;
     }
 
     // Gameloop, runs every frame
     // Because this fuction is called from a different function, this must be bound
     delta(){
         // Check if bread exists before testing its colissions
-        if(this.environment.objects.bread){
+        if(this.env.objects.bread){
             if(Utilities.isWithin(
-                this.environment.objects.bread, this.environment.objects.toaster)
-                && !this.environment.objects.bread.dragging)
-                this.environment.objects.toaster.setInteractive(true)
-            else
-                this.environment.objects.toaster.setInteractive(false)
+                this.env.objects.bread, this.env.objects.toaster)
+                && !this.env.objects.bread.dragging){
+                this.env.objects.toaster.setInteractive(true)
+            }else
+                this.env.objects.toaster.setInteractive(false)
+
+                    // Check if knife exists before testing its colissions
+            if(this.env.objects.knife){
+                if(Utilities.isWithin(this.env.objects.bread, this.env.objects.knife)){
+                    let breadTexture = 
+                        this.loader.resources[`bread${this.env.objects.bread.state}_${this.env.objects.knife.property}`]
+                    this.env.objects.bread.spread(this.env.objects.knife.property);
+                }
+            }
         }
     }
 }

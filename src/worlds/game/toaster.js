@@ -154,6 +154,7 @@ export const Toaster = class extends PIXI.Container{
         ]);
 
         bread.interactive = true;
+        this.elems.body.texture = this.toasterTextures[0];
         this.setInteractive(true);
     }
 }

@@ -12,6 +12,14 @@ export class Utilities{
      * @returns boolean
      */
     static isWithin(elem1, elem2){
+        // Exit function if elements are null
+        if(!elem1 || !elem2){
+            // DEV PLEASE DELETE
+            console.error('ERR: One of the elems is null');
+
+            return false
+        }
+
         const a = elem1.getBounds();
         const b = elem2.getBounds();
 

@@ -80,4 +80,16 @@ export class Bread extends Sprite{
             setTimeout(loop, 1000);
         })
     }
+
+    // Called from game.js
+    spread(property){
+        if(this.property !== "bare")
+            return
+        switch(property){
+            case "butter":
+                let offset = 2;
+                this.texture = this.textures[(this.state - 1) + offset].texture;
+                break;
+        }
+    }
 }
