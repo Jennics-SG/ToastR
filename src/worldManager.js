@@ -6,6 +6,7 @@
 
 import { Menu } from "./worlds/menu";
 import { Game } from "./worlds/game/game";
+import { Loading } from "./worlds/loading";
 
 // Class representing world manager, loads and deletes worlds
 export class WorldManager{
@@ -31,7 +32,7 @@ export class WorldManager{
      * @param {PIXI.Application.ticker} ticker  PIXI ticker
      * @returns null
      */
-    loadWord(string, loader, ticker){
+    loadWord(string, loader, ticker, appView){
         if(!string)
             return false
 
@@ -45,6 +46,10 @@ export class WorldManager{
             case "game":
                 this.currentWorld = new Game(loader);
                 ticker.add(this.currentWorld.delta.bind(this.currentWorld));
+                break;
+            
+            case "loading":
+                this.currentWorld = new Loading(appView);
                 break;
         }
     }

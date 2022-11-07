@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('path');
+const fs = require('fs')
 
 // Initialise server and variables
 const init = () => {
@@ -17,6 +18,7 @@ const init = () => {
 const server = () => {
     // Listen for activity on root page
     // Serve different site for mobile users
+
     sendFiles();
 
     this.app.get('/', (req, res) => {
@@ -52,16 +54,13 @@ const isOnMobile = function(string){
     return false
 }
 
-// Instead of writing out all the files and responses
-// Use a for loop and array of files to map the requests
-// And responses
+// Send all game assets within ./src/assets folder
 const sendFiles = () => {
-    const filesJSON = require('./src/files.json')
-    const filesArray = filesJSON.files
+    const files = fs.readdirSync('./src/assets')
 
-    for(const file of filesArray){
-        this.app.get(`/assets/${file[1]}`, (req, res) => {
-            res.sendFile(path.join(__dirname, `./src/assets/${file[1]}`));
+    for(const file of files){
+        this.app.get(`/assets/${file}`, (req, res) => {
+            res.sendFile(path.join(__dirname, `./src/assets/${file}`));
         });
     }
 }
