@@ -288,7 +288,7 @@ export const Game = class extends PIXI.Container{
 
         if(!roundData.failure){
             this.env.vars.score += roundData.score;
-            Utilities.updateText(this.env.objs.scoreText, `Score: ${roundData.score}`)
+            Utilities.updateText(this.env.objs.scoreText, `Score: ${this.env.vars.score}`)
         } else {
             this.env.vars.chances = Utilities.changeChanceIndicator(
                 this.env.vars.chances, this.env.objs.chanceIndicators,
