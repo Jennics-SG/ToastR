@@ -21,6 +21,7 @@ const toastR = function() {
 
     // Game State
     this.gameState = "loading";
+    this.worldState = null;
 
     // Loader for game sprites
     const loader = new PIXI.Loader("assets")
@@ -45,6 +46,8 @@ const toastR = function() {
         // Add canvas too game view
         this.app.stage.addChild(canvas);
 
+        main();
+
         /** Loader functions & callbacks
          *  
          *  @callback onProgress: Log progress to console
@@ -57,11 +60,11 @@ const toastR = function() {
         loader.onComplete.add(() => {
             this.worldState = "menu";
 
-
             // After loading files for menu, load files for the rest of the game
             this.loadPromise = loadFiles(files, loader);
             this.loadPromise.then(() => {
-                this.worldState = "menu"
+                this.worldState = this.worldState == "game" ? 
+                    "game" : "menu";
                 this.gameState = "loading_finished"
                 main()
             });
@@ -80,29 +83,25 @@ const toastR = function() {
         })
     }
 
+    const loadMenu = () => {
+        worldManger.loadWord(this.worldState, loader, null, null);
+
+        worldManger.currentWorld.playButton.pointerdown = () => {
+            this.worldState = "game";
+            main();
+        }
+    }
+
     // Main function for game
     const main = () => {
-        if(this.gameState != "loading"){
-            switch(this.worldState){
-                case "menu":
-                    // Load menu
-                    worldManger.loadWord(this.worldState, loader);
+        console.log(this.gameState);
+        if(this.worldState == "menu")
+            loadMenu();
+        else if(this.gameState == "loading")
+            worldManger.loadWord(this.gameState, null, null, this.app.view);
+        else if(this.worldState == "game" && this.gameState == "loading_finished")
+            worldManger.loadWord(this.worldState, loader, this.app.ticker, null);
 
-                    // Set exit condition
-                    worldManger.currentWorld.playButton.pointerdown = () => {
-                        this.worldState = "game";
-                        main()
-                    }
-                    break;
-                
-                case "game":
-                    // Load game
-                    worldManger.loadWord(this.worldState, loader, this.app.ticker);
-                    break;
-            }
-        } else{
-            worldManger.loadWord(this.gameState, null, null, this.app.view)
-        }
         canvas.addChild(worldManger.currentWorld);;
     }
 

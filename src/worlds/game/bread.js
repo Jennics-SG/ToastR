@@ -66,11 +66,16 @@ export class Bread extends Sprite{
      */
     changeTexture(setting){
         let i = 1;
+
+        // the array is structured so that all textures for a bread state are grouped together
+        // This means that in order to access just the bread we multiply our index value by the
+        // Multiplyer so that we are just accessing the "bare" breads for toasting
+        let indexMultiplyer = 4;
         return new Promise((resolve) => {
             let loop = () =>{
-                this.state ++
+                this.state++;
 
-                this.texture = this.textures[(this.state - 1) * 4].texture;
+                this.texture = this.textures[(this.state - 1) * indexMultiplyer].texture;
                 if(this.state == 6 || i >= setting) resolve();
                 else if(i <= setting){
                     i++;
@@ -81,14 +86,40 @@ export class Bread extends Sprite{
         })
     }
 
-    // Called from game.js
+
+    /** Spread the topping on bread
+     *  Called from game.js
+     * 
+     * @param {string} property Property of knife spreading 
+     * @returns null if bread already has spread
+     */
     spread(property){
-        if(this.property !== "bare")
+        // Dont spread if already has spread
+        if(this.property != "bare")
             return
+
+        const indexMultiplyer = 4;
+        let indexOffset = 0;
+
+        // Due to the array structure we use the offset to ensure we get the right texture
         switch(property){
             case "butter":
-                let offset = 2;
-                this.texture = this.textures[(this.state - 1) + offset].texture;
+                indexOffset = 2;
+                this.texture = this.textures[((this.state - 1) * indexMultiplyer) + indexOffset].texture;
+                this.property = property;
+                break;
+            case "chocolate":
+                indexOffset = 3;
+                this.texture = this.textures[((this.state - 1) * indexMultiplyer) + indexOffset].texture;
+                this.property = property;
+                break;
+            case "beans":
+                indexOffset = 1;
+                this.texture = this.textures[((this.state - 1) * indexMultiplyer) + indexOffset].texture;
+                this.property = property;
+                break;
+            default:
+                console.error(`ERR: SPREAD UNKNOWN \nProperty:${property}`);
                 break;
         }
     }

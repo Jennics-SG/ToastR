@@ -5,9 +5,9 @@
  */
 
 import * as PIXI from 'pixi.js';
-import { Bread } from './bread';
 import { Toaster } from './toaster';
 import { Utilities } from './utils';
+import { Bread } from './bread'
 import { Spread } from './spread';
 
 /** ToastR.game.Game
@@ -84,8 +84,9 @@ export const Game = class extends PIXI.Container{
         // Make bread texture array ----------------------------------------------------
         this.breadTextures = new Array
         const spreads = ["beans", "butter", "nut"]
+        const breadStates = 6;
 
-        for(let i = 1; i <= 6; i++){
+        for(let i = 1; i <= breadStates; i++){
             this.breadTextures.push(this.loader.resources[`bread${i}`])
             for(const spread of spreads){
                 this.breadTextures.push(this.loader.resources[`bread${i}_${spread}`])
@@ -120,19 +121,56 @@ export const Game = class extends PIXI.Container{
         this.addChild(choppingBoard);
 
         // Make Spreads ----------------------------------------------------------------
-        const bX = choppingBoard.x + this.loader.resources.butter.texture.width;
-        const bY = background.height / 2;
+        // Butter
+        const butX = choppingBoard.x + this.loader.resources.butter.texture.width;
+        const butY = background.height / 2;
 
         const butterTexture = this.loader.resources.butter.texture;
         const butterKnifeTexture = this.loader.resources.knife_butter.texture;
 
-        const butter = new Spread(bX, bY, butterTexture, butterKnifeTexture, 'butter');
+        const butter = new Spread(
+            butX, butY, butterTexture, butterKnifeTexture, 'butter'
+        );
         butter.pointerdown = e => {
             const x = e.data.global.x;
             const y = e.data.global.y;
             butter.makeKnife.bind(butter)(x, y, this);
         }
         this.addChild(butter);
+
+        // Chocolate Spread
+        const cX = butX + (butter.width * 1.5);
+        const cY = butY;
+
+        const chocolateTexture = this.loader.resources.nut.texture;
+        const chocolateKnifeTexture = this.loader.resources.knife_nut.texture;
+
+        const chocolate = new Spread(
+            cX, cY, chocolateTexture, chocolateKnifeTexture, 'chocolate'
+        );
+        chocolate.pointerdown = e => {
+            const x = e.data.global.x;
+            const y = e.data.global.y;
+            chocolate.makeKnife.bind(chocolate)(x, y, this);
+        }
+        this.addChild(chocolate);
+
+        // Beans
+        const beanX = cX + (chocolate.width * 1.5);
+        const beanY = cY;
+
+        const beanTexture = this.loader.resources.beans.texture;
+        const beanKnifeTexture = this.loader.resources.knife_beans.texture;
+
+        const beans = new Spread(
+            beanX, beanY, beanTexture, beanKnifeTexture, 'beans'
+        );
+        beans.pointerdown = e => {
+            const x = e.data.global.x;
+            const y = e.data.global.y;
+            beans.makeKnife.bind(beans)(x, y, this);
+        }
+        this.addChild(beans);
 
         " LOAD WORLD OBJECTS END "
     }
@@ -161,19 +199,19 @@ export const Game = class extends PIXI.Container{
     delta(){
         // Check if bread exists before testing its colissions
         if(this.env.objects.bread){
-            if(Utilities.isWithin(
-                this.env.objects.bread, this.env.objects.toaster)
-                && !this.env.objects.bread.dragging){
+            if(Utilities.isWithin(this.env.objects.bread, this.env.objects.toaster)
+            && !this.env.objects.bread.dragging
+            && this.env.objects.bread.property == "bare"){
                 this.env.objects.toaster.setInteractive(true)
             }else
                 this.env.objects.toaster.setInteractive(false)
 
-                    // Check if knife exists before testing its colissions
+            // Check if knife exists before testing its colissions
             if(this.env.objects.knife){
                 if(Utilities.isWithin(this.env.objects.bread, this.env.objects.knife)){
                     let breadTexture = 
                         this.loader.resources[`bread${this.env.objects.bread.state}_${this.env.objects.knife.property}`]
-                    this.env.objects.bread.spread(this.env.objects.knife.property);
+                    this.env.objects.bread.spread(this.env.objects.knife.property, this.loader);
                 }
             }
         }
