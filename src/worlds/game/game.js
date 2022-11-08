@@ -9,6 +9,7 @@ import { Toaster } from './toaster';
 import { Utilities } from './utils';
 import { Bread } from './bread'
 import { Spread } from './spread';
+import { Order } from './order';
 
 /** ToastR.game.Game
  * 
@@ -26,15 +27,19 @@ export const Game = class extends PIXI.Container{
         this.sortableChildren = true;
 
         this.env = {
-            variables: {
+            vars: {
                 score: 0,
                 chances: 3,
             },
 
-            objects: {
+            objs: {
                 bread: null,
                 toaster: null,
                 knife: null,
+                plate: null,
+                order: null,
+                scoreText: null,
+                chanceIndicators: new Array()
             },
         }
 
@@ -74,15 +79,15 @@ export const Game = class extends PIXI.Container{
 
         // Set toaster pointer events
         toaster.elems.body.pointerdown = () =>
-            toaster.toastBread(this.env.objects.bread)
+            toaster.toastBread(this.env.objs.bread)
         toaster.elems.lever.pointerdown = () => 
-            toaster.toastBread(this.env.objects.bread)
+            toaster.toastBread(this.env.objs.bread)
 
         this.addChild(toaster);
-        this.env.objects.toaster = toaster;
+        this.env.objs.toaster = toaster;
  
-        // Make bread texture array ----------------------------------------------------
-        this.breadTextures = new Array
+        // Make bread texture array for bread object -----------------------------------
+        this.breadTextures = new Array()
         const spreads = ["beans", "butter", "nut"]
         const breadStates = 6;
 
@@ -172,7 +177,84 @@ export const Game = class extends PIXI.Container{
         }
         this.addChild(beans);
 
+        // Make Plate ------------------------------------------------------------------
+        const plate = new PIXI.Sprite.from(this.loader.resources.plate.texture);
+        plate.x = cX;
+        plate.y = cY - plate.height;
+        this.addChild(plate);
+        this.env.objs.plate = plate;
+
         " LOAD WORLD OBJECTS END "
+
+        " LOAD UI START "
+
+        // Make Order Data -------------------------------------------------------------
+        // Make bread texture array for order data
+        const breadTextures = new Array();
+        for(let i = 1; i <= breadStates; i++)
+            breadTextures.push([`bread${i}`, this.loader.resources[`bread${i}`].texture]);
+
+        // Make spread texture array for order data
+        const spreadTextures = new Array(
+            ["butter", this.loader.resources.butter.texture],
+            ["chocolate", this.loader.resources.nut.texture],
+            ["beans", this.loader.resources.beans.texture]
+        );
+
+        const orderX = orderTV.x + (orderTV.width / 3);
+        const orderY = orderTV.y + (orderTV.height / 2);
+
+        const order = new Order(orderX , orderY, breadTextures, spreadTextures);
+        this.addChild(order);
+        this.env.objs.order = order;
+
+        // Make Score Text -------------------------------------------------------------
+        const textStyle = {
+            fill: "#c09947",
+            fontFamily: 'Arial',
+            fontSize: 62,
+            align: 'left',
+            lineJoin: "round",
+            stroke: "#694329",
+            strokeThickness: 20    
+        }
+
+        const score = new PIXI.Text(`Score: ${this.env.vars.score}`, textStyle);
+        score.anchor.set(0.5);
+        score.x = 0 + score.width / 2;
+        score.y = 0 + score.height / 2;
+        this.addChild(score)
+        this.env.objs.scoreText = score;
+
+        // Make Chance indicators ------------------------------------------------------
+        let ciX = background.width
+        let ciY = 0
+
+        const chanceIndicator1 = this.makeChanceIndicator(ciX, ciY);
+        this.addChild(chanceIndicator1);
+        this.env.objs.chanceIndicators.push(chanceIndicator1);
+
+        ciX = chanceIndicator1.x;
+        
+        const chanceIndicator2 = this.makeChanceIndicator(ciX, ciY);
+        this.addChild(chanceIndicator2);
+        this.env.objs.chanceIndicators.push(chanceIndicator2);
+
+        ciX = chanceIndicator2.x;
+
+        const chanceIndicator3 = this.makeChanceIndicator(ciX, ciY);
+        this.addChild(chanceIndicator3);
+        this.env.objs.chanceIndicators.push(chanceIndicator3);
+
+        " LOAD UI END "
+    }
+
+    makeChanceIndicator(x, y){
+        const chanceIndicator = new PIXI.Sprite.from(this.loader.resources.x_dark.texture);
+        chanceIndicator.scale.set(0.7);
+        chanceIndicator.x = x - chanceIndicator.width * 1.5;
+        chanceIndicator.y = y + chanceIndicator.height / 4;
+        return chanceIndicator;
     }
 
     /** Make bread at X, Y
@@ -183,36 +265,63 @@ export const Game = class extends PIXI.Container{
      * @param {Number} y 
      */
     makeBread(x, y){
-        if(this.env.objects.bread){
-            this.env.objects.bread.destroy();
-            this.env.objects.bread = null
-            this.env.variables.score -= 10;
+        if(this.env.objs.bread){
+            this.env.objs.bread.destroy();
+            this.env.objs.bread = null
+            this.env.vars.score -= 10;
+            Utilities.updateText(this.env.objs.scoreText, `Score: ${this.env.vars.score}`);
         }
 
         const bread = new Bread(x, y, this.breadTextures);
         this.addChild(bread);
-        this.env.objects.bread = bread;
+        this.env.objs.bread = bread;
+    }
+
+    endRound(){
+        const roundData = Utilities.checkScore(this.env.objs.bread, this.env.objs.order);
+
+        this.env.objs.bread.destroy();
+        this.env.objs.bread = null;
+        this.env.objs.order.destroy();
+
+        this.env.vars.score += roundData.score;
+
+        if(!roundData.failure){
+            this.env.vars.score += roundData.score;
+            Utilities.updateText(this.env.objs.scoreText, `Score: ${roundData.score}`)
+        } else {
+            this.env.vars.chances = Utilities.changeChanceIndicator(
+                this.env.vars.chances, this.env.objs.chanceIndicators,
+                this.loader.resources.x_light.texture
+            );
+        }
+
+        setTimeout(this.env.objs.order.makeOrder.bind(this.env.objs.order), 500)
+        
     }
 
     // Gameloop, runs every frame
     // Because this fuction is called from a different function, this must be bound
     delta(){
         // Check if bread exists before testing its colissions
-        if(this.env.objects.bread){
-            if(Utilities.isWithin(this.env.objects.bread, this.env.objects.toaster)
-            && !this.env.objects.bread.dragging
-            && this.env.objects.bread.property == "bare"){
-                this.env.objects.toaster.setInteractive(true)
+        if(this.env.objs.bread){
+            if(Utilities.isWithin(this.env.objs.bread, this.env.objs.toaster)
+            && !this.env.objs.bread.dragging
+            && this.env.objs.bread.property == "bare"){
+                this.env.objs.toaster.setInteractive(true)
             }else
-                this.env.objects.toaster.setInteractive(false)
+                this.env.objs.toaster.setInteractive(false)
 
             // Check if knife exists before testing its colissions
-            if(this.env.objects.knife){
-                if(Utilities.isWithin(this.env.objects.bread, this.env.objects.knife)){
-                    let breadTexture = 
-                        this.loader.resources[`bread${this.env.objects.bread.state}_${this.env.objects.knife.property}`]
-                    this.env.objects.bread.spread(this.env.objects.knife.property, this.loader);
-                }
+            if(this.env.objs.knife){
+                if(Utilities.isWithin(this.env.objs.bread, this.env.objs.knife))
+                    this.env.objs.bread.spread(this.env.objs.knife.property, this.loader);
+            }
+
+            // Check that bread has a property before allowing round finish
+            if(Utilities.isWithin(this.env.objs.bread, this.env.objs.plate)
+            && this.env.objs.bread.property != "bare" && !this.env.objs.bread.dragging){
+                this.endRound();
             }
         }
     }

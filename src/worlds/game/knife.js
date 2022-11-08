@@ -37,7 +37,7 @@ export class Knife extends Sprite{
     }
 
     dragEnd(e){
+        this.env.objs.knife = null;
         this.destroy();
-        this.env.objects.knife = null;
     }
 }

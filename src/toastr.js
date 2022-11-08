@@ -94,7 +94,6 @@ const toastR = function() {
 
     // Main function for game
     const main = () => {
-        console.log(this.gameState);
         if(this.worldState == "menu")
             loadMenu();
         else if(this.gameState == "loading")

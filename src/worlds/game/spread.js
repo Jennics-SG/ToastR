@@ -35,6 +35,6 @@ export class Spread extends Sprite{
         const knife = new Knife(x, y, this.childTexture,
                             this.property, container.env);
         container.addChild(knife);
-        container.env.objects.knife = knife;
+        container.env.objs.knife = knife;
     }
 }
