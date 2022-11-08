@@ -1,0 +1,24 @@
+#header{
+    display: flex;
+    flex-direction: row;
+    background-color: #288b90;
+    overflow: hidden;
+    text-align: center;
+    position: fixed;
+    width: 100%;
+}
+
+#header a{
+    flex: 25%;
+    padding-top: 1%;
+    padding-bottom: 1%;
+    font-size: 17px;
+    text-decoration: none;
+    color: wheat;
+}
+
+#header a:hover{
+    flex: 25%;
+    background-color: #217277;
+    color: white;
+}

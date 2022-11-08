@@ -1,0 +1,15 @@
+.parallax {
+    background-image: url("/assets/background.png");
+    height: 100;
+    background-attachment: fixed;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: contain;
+    padding-top: 15%;
+    padding-bottom: 15%;
+}
+
+.parallax h1{
+    color: #c09947;
+    -webkit-text-stroke: #694329;
+}
