@@ -2,6 +2,7 @@
 <html lang = "en">
     <head>
         <%- include('../partials/head'); %>
+        <link rel="stylesheet" type = "text/css" href = "/static/home.css"
     </head>
     
     <body>
@@ -9,9 +10,19 @@
         <%- include('../partials/topNav') %>
 
         <!-- Title Parallax -->
-        <link rel = "stylesheet" href = "/static/parallax.css">
-        <div class = "parallax">
-            <h1>ToastR</h1>
+        <%- include('../partials/parallax', {title: "ToastR"}) %>
+
+        <!-- Text Body -->
+        <div class = "flex-text">
+            <label class = "container">
+                <h3 id = "title">Get lost in a story-rich fantasy world</h3>
+                <p id = "subText">ToastR's story has been hand crafted by a group of mouldy bread sat around in a university flat</p>
+            </label>
+
+            <label class = "container">
+                <h3 id = "title">Fast paced, action packed gameplay!</h3>
+                <p>ToastR's gameplay loop is faced paced and full of action for the user to enjoy. <b>Toasting bread has never been this fun</b></p>
+            </label>
         </div>
     </body>
 </html>

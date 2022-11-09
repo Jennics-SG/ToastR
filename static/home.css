@@ -1,0 +1,27 @@
+.flex-text{
+    background-color: #288b90;
+    width: 100%;
+    margin: auto;
+    display: flex;
+}
+
+.container{
+    background-color: #288b90;
+    word-wrap: break-word;
+    float: left;
+    overflow: hidden;
+    flex: 50%;
+    text-align: center;
+    padding-top: 1%;
+    padding-bottom: 3%;
+    margin-left: 2%;
+    margin-right: 2%;
+}
+
+.container h3{
+    font-size: 50px;
+}
+
+.container p{
+    font-size: 25px;
+}

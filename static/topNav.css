@@ -6,19 +6,28 @@
     text-align: center;
     position: fixed;
     width: 100%;
+    padding-left: 1%;
+    padding-right: 1%;
 }
 
 #header a{
-    flex: 25%;
-    padding-top: 1%;
-    padding-bottom: 1%;
-    font-size: 17px;
-    text-decoration: none;
     color: wheat;
+    text-decoration: none;
 }
 
 #header a:hover{
-    flex: 25%;
-    background-color: #217277;
+    background-color: #257f84;
     color: white;
+}
+
+#header img{
+    flex: 2%;
+    max-width: 50px;
+    max-height: 50px;
+}
+
+.link{
+    padding-top: 1%;
+    padding-bottom: 1%;
+    flex: 33%;
 }

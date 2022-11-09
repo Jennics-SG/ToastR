@@ -1,15 +1,37 @@
-.parallax {
-    background-image: url("/assets/background.png");
-    height: 100;
-    background-attachment: fixed;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: contain;
-    padding-top: 15%;
-    padding-bottom: 15%;
+.parallax{
+    background-image: url("assets/background.png");
 }
 
-.parallax h1{
-    color: #c09947;
-    -webkit-text-stroke: #694329;
+@media (hover: hover){
+    .parallax {
+        height: auto;
+        width: auto;
+        margin: 0;
+        background-attachment: fixed;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: fill;
+        padding-top: 5%;
+        padding-bottom: 5%;
+        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.2);
+    }
+
+    #logo{
+        text-align: center;
+        font-size: 200px;
+        color: #c09947;
+        -webkit-text-stroke: 10px #694329;
+    }
+}
+
+@media (hover: none), (hover:on-demand) {
+    .parallax{
+        height: 100px;
+        width: 100px;
+        margin: auto;
+        background-attachment: fixed;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: auto;
+    }
 }

@@ -41,7 +41,7 @@ const server = () => {
         res.render('pages/scoreboard');
     });
 
-    this.app.get('about', (req, res) => {
+    this.app.get('/about', (req, res) => {
         res.render('pages/about');
     })
 
