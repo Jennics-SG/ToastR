@@ -1,12 +1,12 @@
 .flex-text{
-    background-color: #288b90;
+    background-color: #13B0B9;
     width: 100%;
     margin: auto;
     display: flex;
 }
 
 .container{
-    background-color: #288b90;
+    background-color: #13B0B9;
     word-wrap: break-word;
     float: left;
     overflow: hidden;
@@ -18,10 +18,34 @@
     margin-right: 2%;
 }
 
-.container h3{
-    font-size: 50px;
+.review-text{
+    background-color: #13B0B9;
 }
 
-.container p{
-    font-size: 25px;
+@media (hover: hover){
+    .flex-text{
+        flex-direction: row;
+    }
+
+    .container h3{
+        font-size: 50px;
+    }
+
+    .container p{
+        font-size: 25px;
+    }
+}
+
+@media (hover: none), (hover: on-demand) {
+    .flex-text{
+        flex-direction: column;
+    }
+
+    .container h3{
+        font-size: 25px;
+    }
+
+    .container p{
+        font-size: 12px;
+    }
 }

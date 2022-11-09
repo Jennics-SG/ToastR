@@ -1,37 +1,46 @@
+/* Attributes that dont change between mobile and desktop */
 .parallax{
-    background-image: url("assets/background.png");
+    background-image: url('/assets/background.png');
+    margin: 0;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    background-size: fill;
 }
 
+#logo {
+    text-align: center;
+    color: #c09947;
+}
+
+/* Attributes that are specific to desktop */
 @media (hover: hover){
     .parallax {
         height: auto;
         width: auto;
-        margin: 0;
-        background-attachment: fixed;
         background-position: center;
-        background-repeat: no-repeat;
-        background-size: fill;
         padding-top: 5%;
         padding-bottom: 5%;
         box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.2);
     }
-
+    
     #logo{
-        text-align: center;
-        font-size: 200px;
-        color: #c09947;
+        font-size: 192px;
         -webkit-text-stroke: 10px #694329;
     }
 }
 
+/* Atributes that are specific to mobile */
 @media (hover: none), (hover:on-demand) {
     .parallax{
-        height: 100px;
-        width: 100px;
-        margin: auto;
-        background-attachment: fixed;
-        background-position: center;
-        background-repeat: no-repeat;
-        background-size: auto;
+        height: 100%;
+        width: 100%;
+        background-position: top;
+        padding-top: 25%;
+        padding-bottom: 25%;
+    }
+    #logo{
+        font-size: 92px;
+        -webkit-text-stroke: 5px #694329;
+
     }
 }
