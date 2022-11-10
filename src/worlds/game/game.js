@@ -399,7 +399,6 @@ export const Game = class extends PIXI.Container{
         
         exitButton.pointerdown = () => {
             this.worldManager('menu', this.loader, this.ticker);
-            this.destroy();
         }
 
         exitButton.position.set(ebX, ebY);
