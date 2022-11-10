@@ -92,7 +92,7 @@ export const Toaster = class extends PIXI.Container{
      * 
      * @param {Bread} bread     Current bread object
      */
-    async toastBread(bread){
+    async toastBread(bread, loaf){
         /** Toasting animations
          * 
          *  This function takes the element and moves it to newPos over time 
@@ -135,6 +135,7 @@ export const Toaster = class extends PIXI.Container{
         // Move the bread to the starting toasting position
         // Set interactive to false so users can't move the bread while toasting
         bread.interactive = false;
+        loaf.interactive = false;
         bread.x = this.bounds.x + (this.bounds.width / 2);
         bread.y = this.bounds.y;
         this.elems.body.texture = this.toasterTextures[1];
@@ -154,6 +155,7 @@ export const Toaster = class extends PIXI.Container{
         ]);
 
         bread.interactive = true;
+        loaf.interactive = true;
         this.elems.body.texture = this.toasterTextures[0];
         this.setInteractive(true);
     }

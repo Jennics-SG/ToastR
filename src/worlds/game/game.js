@@ -20,18 +20,17 @@ import { Order } from './order';
  */
 
 export const Game = class extends PIXI.Container{
-    constructor(loader){
+    constructor(loader, ticker, worldManager){
         super();
         this.loader = loader;
+        this.ticker = ticker;
+        this.worldManager = worldManager;
+        console.log(worldManager);
 
         this.sortableChildren = true;
 
         this.env = {
-            vars: {
-                score: 0,
-                chances: 3,
-            },
-
+            vars: {},
             objs: {
                 bread: null,
                 toaster: null,
@@ -43,8 +42,13 @@ export const Game = class extends PIXI.Container{
             },
         }
 
-        " LOAD WORLD OBJECTS START "
+        this.loadWorld();
 
+        this.init();
+    }
+
+    // Loads world and UI
+    loadWorld(){
         // Create background at 0,0 ---------------------------------------------------
         const background = new PIXI.Sprite.from(
             this.loader.resources.background.texture
@@ -61,31 +65,6 @@ export const Game = class extends PIXI.Container{
         orderTV.position.set(otx, oty);
         this.addChild(orderTV);
         
-        // Make toaster ----------------------------------------------------------------
-        const dialTextures = new Array()
-
-        for(let i = 1; i < 6; i++)
-            dialTextures.push(this.loader.resources[`dial${i}`].texture);
-        
-        const toasterUpTexture = this.loader.resources.toaster_up.texture;
-        const toasterDownTexture = this.loader.resources.toaster_down.texture;
-        const tx = (background.height / 20);
-        const ty = (background.height) - toasterUpTexture.height * 1.5;
-
-        const toaster = new Toaster(
-            tx, ty, toasterUpTexture, toasterDownTexture,
-            this.loader.resources.lever.texture, dialTextures
-        );
-
-        // Set toaster pointer events
-        toaster.elems.body.pointerdown = () =>
-            toaster.toastBread(this.env.objs.bread)
-        toaster.elems.lever.pointerdown = () => 
-            toaster.toastBread(this.env.objs.bread)
-
-        this.addChild(toaster);
-        this.env.objs.toaster = toaster;
- 
         // Make bread texture array for bread object -----------------------------------
         this.breadTextures = new Array()
         const spreads = ["beans", "butter", "nut"]
@@ -115,6 +94,32 @@ export const Game = class extends PIXI.Container{
             this.makeBread(x, y)
         }
         this.addChild(loaf);
+
+        // Make toaster ----------------------------------------------------------------
+        const dialTextures = new Array()
+
+        for(let i = 1; i < 6; i++)
+            dialTextures.push(this.loader.resources[`dial${i}`].texture);
+        
+        const toasterUpTexture = this.loader.resources.toaster_up.texture;
+        const toasterDownTexture = this.loader.resources.toaster_down.texture;
+        const tx = (background.height / 20);
+        const ty = (background.height) - toasterUpTexture.height * 1.5;
+
+        const toaster = new Toaster(
+            tx, ty, toasterUpTexture, toasterDownTexture,
+            this.loader.resources.lever.texture, dialTextures
+        );
+
+        // Set toaster pointer events
+        toaster.elems.body.pointerdown = () =>
+            toaster.toastBread(this.env.objs.bread, loaf)
+        toaster.elems.lever.pointerdown = () => 
+            toaster.toastBread(this.env.objs.bread, loaf)
+
+        this.addChild(toaster);
+        this.env.objs.toaster = toaster;
+         
 
         // Make Chopping Board ---------------------------------------------------------
         const cbTexture = this.loader.resources.choppingBoard.texture;
@@ -184,10 +189,6 @@ export const Game = class extends PIXI.Container{
         this.addChild(plate);
         this.env.objs.plate = plate;
 
-        " LOAD WORLD OBJECTS END "
-
-        " LOAD UI START "
-
         // Make Order Data -------------------------------------------------------------
         // Make bread texture array for order data
         const breadTextures = new Array();
@@ -209,7 +210,7 @@ export const Game = class extends PIXI.Container{
         this.env.objs.order = order;
 
         // Make Score Text -------------------------------------------------------------
-        const textStyle = {
+        this.textStyle = {
             fill: "#c09947",
             fontFamily: 'Arial',
             fontSize: 62,
@@ -219,7 +220,7 @@ export const Game = class extends PIXI.Container{
             strokeThickness: 20    
         }
 
-        const score = new PIXI.Text(`Score: ${this.env.vars.score}`, textStyle);
+        const score = new PIXI.Text(`Score: ${this.env.vars.score}`, this.textStyle);
         score.anchor.set(0.5);
         score.x = 0 + score.width / 2;
         score.y = 0 + score.height / 2;
@@ -245,10 +246,31 @@ export const Game = class extends PIXI.Container{
         const chanceIndicator3 = this.makeChanceIndicator(ciX, ciY);
         this.addChild(chanceIndicator3);
         this.env.objs.chanceIndicators.push(chanceIndicator3);
-
-        " LOAD UI END "
     }
 
+    // Intialise environment variables and add delta to ticker
+    init(){
+        this.env.vars = {
+            score: 0,
+            chances: 3,
+        }
+
+        // Update the score text before starting game
+        Utilities.updateText(this.env.objs.scoreText, `Score: ${this.env.vars.score}`);
+
+        this.env.objs.order.makeOrder();
+
+        this.env.vars.chances = Utilities.changeChanceIndicator(this.env.objs.chanceIndicators, this.loader.resources.x_dark.texture);
+
+        this.ticker.add(this.delta.bind(this));
+    }
+
+    /** Make chance indicator at x, y
+     *  
+     *  @param {Number} x 
+     *  @param {Number} y 
+     *  @returns chanceIndicator
+     */
     makeChanceIndicator(x, y){
         const chanceIndicator = new PIXI.Sprite.from(this.loader.resources.x_dark.texture);
         chanceIndicator.scale.set(0.7);
@@ -277,26 +299,111 @@ export const Game = class extends PIXI.Container{
         this.env.objs.bread = bread;
     }
 
+    // End the round and make a new order
     endRound(){
         const roundData = Utilities.checkScore(this.env.objs.bread, this.env.objs.order);
 
+        // Destoy objects
         this.env.objs.bread.destroy();
         this.env.objs.bread = null;
         this.env.objs.order.destroy();
 
-        this.env.vars.score += roundData.score;
-
+        // Add to score if there is no failure or update chances
         if(!roundData.failure){
             this.env.vars.score += roundData.score;
             Utilities.updateText(this.env.objs.scoreText, `Score: ${this.env.vars.score}`)
         } else {
             this.env.vars.chances = Utilities.changeChanceIndicator(
-                this.env.vars.chances, this.env.objs.chanceIndicators,
-                this.loader.resources.x_light.texture
+                this.env.objs.chanceIndicators,
+                this.loader.resources.x_light.texture,
+                this.env.vars.chances,
             );
         }
 
-        setTimeout(this.env.objs.order.makeOrder.bind(this.env.objs.order), 500)
+        // If the player still has chances make a new order, if not end the game
+        if(this.env.vars.chances >= 1){
+            let order = this.env.objs.order
+
+            setTimeout(order.makeOrder.bind(order), 500)
+        } else {
+            this.gameOver()
+        }
+    }
+
+    gameOver(){
+        const failTextArray = [
+            'Fission Mailed', 
+            'Game Over', 
+            'How did you mess this up, its just toast', 
+            'Even my comatose nan could do better',
+            'My dissapointment is immeasurable, \nand my day is ruined'
+        ];
+
+        const randNum = Math.floor(Math.random() * failTextArray.length);
+        const currentText = failTextArray[randNum];
+
+        // Remove delta from ticker
+        this.ticker.remove(this.delta.bind(this));
+
+        const container = new PIXI.Container();
+        container.zIndex = 2;
+
+        // Do this to stop user interacting with game behind pop up
+        container.interactive = true;
+
+        this.addChild(container);
+
+        const backgroundX = this.loader.resources.background.texture.width / 2
+        const backgroundY = this.loader.resources.background.texture.height / 2
+
+        const background = new PIXI.Sprite.from(this.loader.resources.greyBox.texture);
+        background.anchor.set(0.5);
+        background.position.set(backgroundX, backgroundY);
+        background.zIndex = 2;
+        container.addChild(background);
+
+        this.textStyle.align = 'center';
+        const failText = new PIXI.Text(currentText  , this.textStyle);
+        const ftX = background.x - failText.width / 2;
+        const ftY = (background.y - background.height / 2) + background.height / 6;
+        failText.position.set(ftX, ftY);
+        container.addChild(failText);
+
+        const finalScoreText = new PIXI.Text(`Score: ${this.env.vars.score}`, this.textStyle);
+        const fstX = background.x - finalScoreText.width / 2;
+        const fstY = ftY + (background.height / 6) * 1.5;
+        finalScoreText.position.set(fstX, fstY);
+        container.addChild(finalScoreText);
+
+        // Replace with button image
+        const playAgainButton = new PIXI.Text('Play Again?', this.textStyle);
+        const pabX = background.x - playAgainButton.width / 2;
+        const pabY = fstY + background.height / 5;
+
+        playAgainButton.interactive = true;
+
+        playAgainButton.pointerdown = () =>{
+            this.init.bind(this)();
+            container.destroy();
+        }
+
+        playAgainButton.position.set(pabX, pabY);
+        container.addChild(playAgainButton);
+
+        // Replace with button image
+        const exitButton = new PIXI.Text(`Exit Game`, this.textStyle);
+        const ebX = background.x - exitButton.width / 2;
+        const ebY = pabY + background.height / 5;
+
+        exitButton.interactive = true;
+        
+        exitButton.pointerdown = () => {
+            this.worldManager('menu', this.loader, this.ticker);
+            this.destroy();
+        }
+
+        exitButton.position.set(ebX, ebY);
+        container.addChild(exitButton);
         
     }
 
