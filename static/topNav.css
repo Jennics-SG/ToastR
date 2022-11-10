@@ -1,7 +1,7 @@
 #header{
     display: flex;
     flex-direction: row;
-    background-color: #288b90;
+    background-color: #34A1A7;
     overflow: hidden;
     text-align: center;
     position: fixed;
@@ -16,18 +16,47 @@
 }
 
 #header a:hover{
-    background-color: #257f84;
+    background-color: #58A0A4;
     color: white;
 }
 
-#header img{
-    flex: 2%;
-    max-width: 50px;
-    max-height: 50px;
+@media (hover:hover) {
+    .link{
+        padding-top: 1%;
+        padding-bottom: 1%;
+        flex: 30%;
+    }
+
+    .home{
+        padding-top: 1%;
+        padding-bottom: 1%;
+        flex: 30%;
+    }
+
+    #header img{
+        flex: 2%;
+        max-width: 50px;
+        max-height: 50px;
+        padding-right: 1%;
+    }
+    
 }
 
-.link{
-    padding-top: 1%;
-    padding-bottom: 1%;
-    flex: 33%;
+@media (hover: none), (hover: on-demand){
+    .link{
+        flex: 30%;
+    }
+
+    #header{
+        padding-top: 2.5%;
+        padding-bottom: 2.5%;
+    }
+
+    #header img{
+        display: none;
+    }
+
+    .home{
+        flex: 2%;
+    }
 }

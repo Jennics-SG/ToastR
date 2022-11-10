@@ -13,24 +13,52 @@
         <%- include('../partials/parallax', {title: "ToastR"}) %>
 
         <!-- Text Body -->
-        <div class = "flex-text">
-            <label class = "container">
-                <h3 id = "title">Get lost in a story-rich fantasy world</h3>
-                <p id = "subText">ToastR's story has been hand crafted by a group of mouldy bread sat around in a university flat</p>
-            </label>
+        <div class = "main-body">
+            <div class = "flex-text">
+                <label class = "container">
+                    <h3 id = "title">Get lost in a story-rich fantasy world</h3>
+                    <p id = "subText">ToastR's story has been hand crafted by a group of mouldy bread sat around in a university flat</p>
+                </label>
 
-            <label class = "container">
-                <h3 id = "title">Fast paced, action packed gameplay!</h3>
-                <p id = "subText">ToastR's gameplay loop is faced paced and full of action for the user to enjoy. <b>Toasting bread has never been this fun</b></p>
-            </label>
-        </div>
+                <label class = "container">
+                    <h3 id = "title">Fast paced, action packed gameplay!</h3>
+                    <p id = "subText">ToastR's gameplay loop is faced paced and full of action for the user to enjoy. <b>Toasting bread has never been this fun</b></p>
+                </label>
+            </div>
 
-        <div class = "review-text">
-            <h2 id = "heading">Reviews</h2>
-            <label class = "rating">
-                <h3 id = "title">You should add ratings, then it would be 10/10</h3>
-                <p id = "subText">- Owen Ross from Dominos</p>
-            </label>
+            <div class = "review-text">
+                <h2 id = "heading">Reviews</h2>
+                <div class = "rating">
+                    <label class = "flex-rating">
+                        <h3 id = "title">You should add ratings, then it would be 10/10</h3>
+                        <p id = "subText">- A guy from Dominos</p>
+                    </label>
+
+                    <label class = "flex-rating">
+                        <a href = "https://www.lipsum.com/" target="_blank">
+                            <h3 id = "title">Lorem ipsum dolor sit amet, consectetur adipiscing elit</h3>
+                            <p id = "subText">- Some random guy in the printing industry</p>
+                        </a>
+                    </label>
+
+                    <label class = "flex-rating">
+                        <h3 id = "title">I Swear to god if this is about that stupid toast game</h3>
+                        <p id = "subText">- My housemate (I ran away before he could finish the quote)</p>
+                    </label>
+
+                    <div class="break"></div> <!-- done to break into new row -->
+
+                    <label class = "flex-rating">
+                        <h3 id = "title">This is really good! Nice pick up and play kind of game!</h3>
+                        <p id = "subText">- Someone out there, maybe</p>
+                    </label>
+
+                    <label class = "flex-rating">
+                        <h3 id = "title">Wow, this review is here to layout the website better!</h3>
+                        <p id = "subtext">- Why did you even bother reading who wrote this</p>
+                    </label>
+                </div>
+            </div>
         </div>
     </body>
 </html>
