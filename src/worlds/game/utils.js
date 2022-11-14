@@ -92,10 +92,17 @@ export class Utilities{
      * @param {Loader.resource} texture             Texture to change them too 
      * @returns chances
      */
-    static changeChanceIndicator(chances, chanceIndicators, texture){
-        chances -= 1
-        if(chances >= 0) chanceIndicators[chances].texture = texture
-        return chances
+    static changeChanceIndicator(chanceIndicators, texture, chances){
+        if(chances){
+            chances -= 1
+            if(chances >= 0) chanceIndicators[chances].texture = texture
+            return chances
+        }
+
+        for(const indicator of chanceIndicators)
+            indicator.texture = texture;
+
+        return 3;
     }
 }
 

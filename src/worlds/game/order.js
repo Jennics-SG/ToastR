@@ -17,8 +17,6 @@ export class Order extends Container{
 
         this.breadTextures = breads;
         this.spreadTextures = spreads;
-
-        this.makeOrder();
     }
 
     makeOrder(){

@@ -44,8 +44,7 @@ export class WorldManager{
                 break;
             
             case "game":
-                this.currentWorld = new Game(loader);
-                ticker.add(this.currentWorld.delta.bind(this.currentWorld));
+                this.currentWorld = new Game(loader, ticker, this.loadWord.bind(this));
                 break;
             
             case "loading":
