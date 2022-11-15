@@ -4,7 +4,6 @@ const path = require('path');
 const fs = require('fs')
 const database = require('./totos/databaseinit')
 const user = require('./totos/models/user')
-const colours = require('./consoleColours')
 
 // Initialise server and variables
 const init = () => {
@@ -25,8 +24,6 @@ const server = () => {
     // Listen for activity on root page
     // Serve different site for mobile users
 
-    console.log(colours.colours.blink)
-
     database.connect()
 
     sendFiles();
@@ -45,7 +42,12 @@ const server = () => {
     })
 
     this.app.get('/scoreboard', (req, res) => {
-        res.render('pages/scoreboard');
+        user.find({}, (err, vals) => {
+            if(err)
+                res.send(err)
+            else
+                res.send(vals);
+        })
     });
 
     this.app.get('/about', (req, res) => {
@@ -56,8 +58,6 @@ const server = () => {
     this.app.get('/main.js', (req, res) => {
         res.sendFile(path.join(__dirname, '/dist/main.js'))
     });
-
-    console.log(colours.colours)
 
     this.app.listen(this.port, () => {
         console.log(
@@ -86,14 +86,6 @@ const sendFiles = () => {
             res.sendFile(path.join(__dirname, `./src/assets/${file}`));
         });
     }
-}
-
-const score = () => {
-    let person = new user.schema({
-        user: "fillip",
-        score: 1000
-    })
-    person.save();
 }
 
 init()

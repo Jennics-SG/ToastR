@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const colours = require('../consoleColours');
 
 module.exports.connect = () => {
     // Set up default conn
@@ -7,5 +8,8 @@ module.exports.connect = () => {
 
     const db = mongoose.connection;
 
-    db.on('error', console.error.bind(console, "MongoDB Connection Error:"))
+    db.on('error', console.error.bind(console, "MongoDB Connection Error:"));
+    db.once('open', () => {
+        console.log(`${colours.foregroud.green}%s${colours.reset}`, "Database Connection Established")
+    });
 }
