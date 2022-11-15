@@ -44,19 +44,14 @@ const server = () => {
     })
 
     this.app.get('/scoreboard', (req, res) => {
-        user.find(
-            {
-                sort:{
-                    score: -1
-                }
-            }, (err, vals) => {
+        user.find({}, (err, vals) => {
             if(err){
                 res.send(500, err)
                 return;
             }
             
             res.render('pages/scoreboard', {scores: vals});
-        })
+        }).sort({score: -1}).limit(100)
     });
 
     this.app.get('/about', (req, res) => {

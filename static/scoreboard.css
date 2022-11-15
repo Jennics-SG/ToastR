@@ -34,3 +34,15 @@
 .data p {
     font-size: 25px;
 }
+
+.pos1 {
+    color: gold;
+}
+
+.pos2 { 
+    color: silver;
+}
+
+.pos3 {
+    color: #CD7F32;
+}

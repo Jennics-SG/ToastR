@@ -2,6 +2,7 @@
 <html lang = "en">
     <head>
         <%- include('../partials/head'); %>
+        <link rel="stylesheet" href="/static/scoreboard.css">
     </head>
     
     <body>
@@ -11,7 +12,6 @@
         <!-- Title Parallax -->
         <%- include('../partials/parallax', {title: "Best Toasters"}) %>
 
-        <link rel="stylesheet" href="/static/scoreboard.css">
         <div id = "scoreboard">
             <%if(locals.scores) {
                 let i = 0
