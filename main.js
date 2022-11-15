@@ -2,6 +2,9 @@ const express = require('express');
 const favicon = require('serve-favicon');
 const path = require('path');
 const fs = require('fs')
+const database = require('./totos/databaseinit')
+const user = require('./totos/models/user')
+const colours = require('./consoleColours')
 
 // Initialise server and variables
 const init = () => {
@@ -21,6 +24,10 @@ const init = () => {
 const server = () => {
     // Listen for activity on root page
     // Serve different site for mobile users
+
+    console.log(colours.colours.blink)
+
+    database.connect()
 
     sendFiles();
     sendStatic();
@@ -47,30 +54,16 @@ const server = () => {
 
     // Send JS file when requested
     this.app.get('/main.js', (req, res) => {
-        console.log('Sending main.js')
         res.sendFile(path.join(__dirname, '/dist/main.js'))
     });
 
+    console.log(colours.colours)
+
     this.app.listen(this.port, () => {
-        console.log(`Toasters are hot and ready\nConnect too ${this.hostName}:${this.port} to start making toast`)
+        console.log(
+            `Connect too ${this.hostName}:${this.port} to start making toast`
+        );
     })
-}
-
-// Detect if user is on mobile
-const isOnMobile = function(string){
-    const deviceHeaders =  ["Android",
-                            "iPhone",
-                            "iPad",
-                            "iPod",
-                            "BlackBerry",
-                            "Windows Phone"]
-
-    for(const str of deviceHeaders){
-        if(string.includes(str)){
-            return true;
-        }
-    }
-    return false
 }
 
 // Send all files in ./static
@@ -93,6 +86,14 @@ const sendFiles = () => {
             res.sendFile(path.join(__dirname, `./src/assets/${file}`));
         });
     }
+}
+
+const score = () => {
+    let person = new user.schema({
+        user: "fillip",
+        score: 1000
+    })
+    person.save();
 }
 
 init()
