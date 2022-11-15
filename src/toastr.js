@@ -30,7 +30,7 @@ const toastR = function() {
     const canvas = new PIXI.Container()
 
     // World Manager for the game
-    const worldManger = new WorldManager();
+    const worldManger = new WorldManager(canvas);
     
     // Initialise the app
     const init = () => {
@@ -83,25 +83,14 @@ const toastR = function() {
         })
     }
 
-    const loadMenu = () => {
-        worldManger.loadWord(this.worldState, loader, null, null);
-
-        worldManger.currentWorld.playButton.pointerdown = () => {
-            this.worldState = "game";
-            main();
-        }
-    }
-
     // Main function for game
     const main = () => {
         if(this.worldState == "menu")
-            loadMenu();
+            worldManger.loadWord(this.worldState, loader, this.app.ticker, null);
         else if(this.gameState == "loading")
             worldManger.loadWord(this.gameState, null, null, this.app.view);
         else if(this.worldState == "game" && this.gameState == "loading_finished")
             worldManger.loadWord(this.worldState, loader, this.app.ticker, null);
-
-        canvas.addChild(worldManger.currentWorld);;
     }
 
     init();

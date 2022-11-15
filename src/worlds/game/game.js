@@ -16,7 +16,9 @@ import { Order } from './order';
  *  Load assets into game and set up interactivity, will also contain
  *  delta loop for game
  * 
- * @param {PIXI.Loader} loader Loader containing assets for the game
+ * @param {PIXI.Loader} loader          Loader containing assets for the game
+ * @param {PIXI.Ticker} Ticker          App ticker
+ * @param {Function}    WorldManager    Worldmanager's load world function
  */
 
 export const Game = class extends PIXI.Container{
@@ -25,7 +27,7 @@ export const Game = class extends PIXI.Container{
         this.loader = loader;
         this.ticker = ticker;
         this.worldManager = worldManager;
-        console.log(worldManager);
+        //console.log(worldManager);
 
         this.sortableChildren = true;
 

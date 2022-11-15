@@ -2,4 +2,19 @@
 
 <div class = "parallax">
     <h1 id = "logo"><%= locals.title %></h1>
+    <% if(locals.page == "home") {%>
+        <a id = "playLink" href="/play">
+            <img src='/assets/playButton.png', onmouseover="hover(this);", onmouseout="unhover(this);"/>
+        </a>
+    <% }%>
+
+    <script>
+        function hover(elem){
+            elem.setAttribute('src', '/assets/playButton-invert.png');
+        }
+
+        function unhover(elem){
+            elem.setAttribute('src', '/assets/playButton.png');
+        }
+    </script>
 </div>

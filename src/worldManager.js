@@ -10,8 +10,9 @@ import { Loading } from "./worlds/loading";
 
 // Class representing world manager, loads and deletes worlds
 export class WorldManager{
-    constructor(){
+    constructor(canvas){
         this.currentWorld = undefined;
+        this.canvas = canvas;
     }
 
     /** Delete current world if exists
@@ -29,7 +30,7 @@ export class WorldManager{
      * 
      * @param {String}                  string  World to be loaded 
      * @param {PIXI.loader}             loader  PIXI loader containing game files
-     * @param {PIXI.Application.ticker} ticker  PIXI ticker
+     * @param {PIXI.Ticker} ticker  PIXI ticker
      * @returns null
      */
     loadWord(string, loader, ticker, appView){
@@ -40,7 +41,7 @@ export class WorldManager{
 
         switch(string){
             case "menu":
-                this.currentWorld = new Menu(loader);
+                this.currentWorld = new Menu(loader, ticker, this.loadWord.bind(this));
                 break;
             
             case "game":
@@ -51,5 +52,6 @@ export class WorldManager{
                 this.currentWorld = new Loading(appView);
                 break;
         }
+        this.canvas.addChild(this.currentWorld);
     }
 }

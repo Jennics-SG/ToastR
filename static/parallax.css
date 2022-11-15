@@ -12,14 +12,25 @@
     color: #c09947;
 }
 
+#playLink {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-bottom: 1%;
+}
+
+#playLink img {
+    width: 300px;
+    height: 150px;
+}
+
 /* Attributes that are specific to desktop */
 @media (hover: hover){
     .parallax {
         height: auto;
         width: auto;
         background-position: top;
-        padding-top: 5%;
-        padding-bottom: 5%;
+        padding-top: 1%;
         box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.2);
     }
     

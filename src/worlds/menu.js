@@ -7,9 +7,11 @@
 import * as PIXI from 'pixi.js';
 
 export const Menu = class extends PIXI.Container{
-    constructor(loader){
+    constructor(loader, ticker, worldManager){
         super();
         this.loader = loader;
+        this.ticker = ticker;
+        this.worldManager = worldManager;
 
         const textStyle = {
             fill: "#c09947",
@@ -45,11 +47,40 @@ export const Menu = class extends PIXI.Container{
         );
         this.addChild(logo);
 
-        textStyle.fontSize = 90;
-        this.playButton = new PIXI.Text('Play Now', textStyle);
-        this.playButton.anchor.set(0.5);
-        this.playButton.position.set(menuBox.x, menuBox.y);
-        this.playButton.interactive = true;
-        this.addChild(this.playButton);
+        // const playButton = new PIXI.Text('Play Now', textStyle);
+        // playButton.anchor.set(0.5);
+        // playButton.position.set(menuBox.x, menuBox.y);
+        // playButton.interactive = true;
+
+        // playButton.pointerdown = () => {
+        //     this.worldManager("game", this.loader, this.ticker)
+        // }
+
+        const playButtonTexture = this.loader.resources.playButton.texture;
+        const playButtonInvert = this.loader.resources.playButton_inv.texture;
+
+        const playButton = new PIXI.Sprite.from(playButtonTexture);
+        playButton.scale.set(0.5);
+        playButton.anchor.set(0.5);
+        playButton.position.set(menuBox.x, menuBox.y);
+
+        playButton.interactive = true;
+
+        // Change texture on hover enter
+        playButton.pointerover = () => {
+            playButton.texture = playButtonInvert;
+        }
+
+        // Change texture back on hover exit
+        playButton.pointerout = () => {
+            playButton.texture = playButtonTexture;
+        }
+
+        // Load game on press
+        playButton.pointerdown = () => {
+            this.worldManager("game", this.loader, this.ticker);
+        }
+
+        this.addChild(playButton);
     }
 }
