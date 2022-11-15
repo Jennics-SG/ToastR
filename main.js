@@ -1,8 +1,10 @@
+//08/10/22
+
 const express = require('express');
 const favicon = require('serve-favicon');
 const path = require('path');
 const fs = require('fs')
-const database = require('./totos/databaseinit')
+const database = require('./totos/database')
 const user = require('./totos/models/user')
 
 // Initialise server and variables
@@ -42,11 +44,18 @@ const server = () => {
     })
 
     this.app.get('/scoreboard', (req, res) => {
-        user.find({}, (err, vals) => {
-            if(err)
-                res.send(err)
-            else
-                res.send(vals);
+        user.find(
+            {
+                sort:{
+                    score: -1
+                }
+            }, (err, vals) => {
+            if(err){
+                res.send(500, err)
+                return;
+            }
+            
+            res.render('pages/scoreboard', {scores: vals});
         })
     });
 

@@ -1,9 +1,11 @@
+// 15/11/22
+
 const mongoose = require('mongoose');
 const colours = require('../consoleColours');
 
 module.exports.connect = () => {
     // Set up default conn
-    const mongoDB = "mongodb://127.0.0.1/my_database"
+    const mongoDB = "mongodb://127.0.0.1/ToastR-Scoreboard"
     mongoose.connect(mongoDB, {useNewUrlParser: true, useUnifiedTopology: true});
 
     const db = mongoose.connection;
