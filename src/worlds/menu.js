@@ -46,16 +46,7 @@ export const Menu = class extends PIXI.Container{
             (menuBox.y - menuBox.height / 2) + logo.height
         );
         this.addChild(logo);
-
-        // const playButton = new PIXI.Text('Play Now', textStyle);
-        // playButton.anchor.set(0.5);
-        // playButton.position.set(menuBox.x, menuBox.y);
-        // playButton.interactive = true;
-
-        // playButton.pointerdown = () => {
-        //     this.worldManager("game", this.loader, this.ticker)
-        // }
-
+        
         const playButtonTexture = this.loader.resources.playButton.texture;
         const playButtonInvert = this.loader.resources.playButton_inv.texture;
 
