@@ -3,9 +3,11 @@
 const express = require('express');
 const favicon = require('serve-favicon');
 const path = require('path');
-const fs = require('fs')
-const database = require('./totos/database')
-const user = require('./totos/models/user')
+const fs = require('fs');
+const database = require('./totos/database');
+const user = require('./totos/models/user');
+const colours = require('./consoleColours')
+const bodyParser = require('body-parser');
 
 // Initialise server and variables
 const init = () => {
@@ -17,6 +19,9 @@ const init = () => {
     this.app.set('view engine', 'ejs');
 
     this.app.use(favicon(path.join(__dirname, 'favicon.ico')));
+
+    this.app.use(bodyParser.urlencoded({ extended: false}));
+    this.app.use(bodyParser.json());
 
     server();
 
@@ -62,6 +67,48 @@ const server = () => {
     this.app.get('/main.js', (req, res) => {
         res.sendFile(path.join(__dirname, '/dist/main.js'))
     });
+
+    this.app.post('/submitScore', (req, res) => {
+        // Get data from body and put it into database
+        console.log(colours.foregroud.yellow, 'Score Submission started...');
+
+        const data = {
+            name: req.body.name,
+            score: req.body.score
+        }
+
+        user.find({name: data.name}, (err, vals) => {
+            if(err){
+                res.send(500, err);
+                console.error(err);
+                return;
+            }
+
+            if(vals[0]){
+                console.log(colours.foregroud.red, `    User ${data.name} already exists`);
+
+                if (vals[0].score >= data.score) {
+                    console.log(colours.foregroud.red, `    Old score higher, exiting function...`);
+                    return;
+                }
+
+                console.log(colours.foregroud.yellow, `    New score higher`);
+
+                const person = vals[0]
+                person.score = data.score;
+                person.save();
+
+                console.log(colours.foregroud.green, `    User ${data.name} new score saved`);
+            } else {
+                console.log(colours.foregroud.green, `    User ${data.name} is a new entry`);
+
+                const person = new user(data)
+                person.save();
+
+                console.log(colours.foregroud.green, `    User ${data.name} saved with score: ${data.score}`)
+            }
+        })
+    })
 
     this.app.listen(this.port, () => {
         console.log(

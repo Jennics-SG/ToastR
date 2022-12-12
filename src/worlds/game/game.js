@@ -10,6 +10,7 @@ import { Utilities } from './utils';
 import { Bread } from './bread'
 import { Spread } from './spread';
 import { Order } from './order';
+import { TextInput } from 'pixitextinputupdated';
 
 /** ToastR.game.Game
  * 
@@ -27,11 +28,14 @@ export const Game = class extends PIXI.Container{
         this.loader = loader;
         this.ticker = ticker;
         this.worldManager = worldManager;
-        //console.log(worldManager);
+
+        // Add Text Input to pixi 
+        PIXI.TextInput = TextInput(PIXI);
 
         this.sortableChildren = true;
 
         this.env = {
+            name: null,
             vars: {},
             objs: {
                 bread: null,
@@ -253,7 +257,7 @@ export const Game = class extends PIXI.Container{
     // Intialise environment variables and add delta to ticker
     init(){
         this.env.vars = {
-            score: 0,
+            score: 123456,
             chances: 3,
         }
 
@@ -265,6 +269,7 @@ export const Game = class extends PIXI.Container{
         this.env.vars.chances = Utilities.changeChanceIndicator(this.env.objs.chanceIndicators, this.loader.resources.x_dark.texture);
 
         this.ticker.add(this.delta.bind(this));
+        this.gameOver();
     }
 
     /** Make chance indicator at x, y
@@ -367,24 +372,54 @@ export const Game = class extends PIXI.Container{
         this.textStyle.align = 'center';
         const failText = new PIXI.Text(currentText  , this.textStyle);
         const ftX = background.x - failText.width / 2;
-        const ftY = (background.y - background.height / 2) + background.height / 6;
+        const ftY = (background.y - background.height / 2) + failText.height / 3;
         failText.position.set(ftX, ftY);
         container.addChild(failText);
 
+        const userText = new PIXI.Text(`User Name:`, this.textStyle);
+        const utX = backgroundX - background.width / 3;
+        const utY = (ftY + failText.height / 3) + (background.height / 6);
+        userText.position.set(utX, utY);
+        container.addChild(userText);
+
+        const userInput = new PIXI.TextInput({
+            input: {
+                fontSize: '25pt',
+                padding: '14px',
+                width: '500px',
+                color: '#26272E'
+            },
+            box: {
+                default: {fill: 0xE8E9F3, rounded: 16, stroke: {color: 0xCBCEE0, width: 4}},
+                focused: {fill: 0xE1E3EE, rounded: 16, stroke: {color: 0xABAFC6, width: 4}},
+                disabled: {fill: 0xDBDBDB, rounded: 16}
+            }
+        });
+        const uiX = utX + userInput.width / 1.5;
+        const uiY = utY;
+        userInput.position.set(uiX, uiY);
+        container.addChild(userInput);
+
+        // Listen for input in textInput and add the string to the name variable
+        userInput.on('input', str => {
+            this.env.name = str;
+        })
+
         const finalScoreText = new PIXI.Text(`Score: ${this.env.vars.score}`, this.textStyle);
         const fstX = background.x - finalScoreText.width / 2;
-        const fstY = ftY + (background.height / 6) * 1.5;
+        const fstY = uiY + (background.height / 6);
         finalScoreText.position.set(fstX, fstY);
         container.addChild(finalScoreText);
 
         // Replace with button image
         const playAgainButton = new PIXI.Text('Play Again?', this.textStyle);
         const pabX = background.x - playAgainButton.width / 2;
-        const pabY = fstY + background.height / 5;
+        const pabY = fstY + background.height / 6;
 
         playAgainButton.interactive = true;
 
         playAgainButton.pointerdown = () =>{
+            this.submitScore(this.env);
             this.init.bind(this)();
             container.destroy();
         }
@@ -395,17 +430,34 @@ export const Game = class extends PIXI.Container{
         // Replace with button image
         const exitButton = new PIXI.Text(`Exit Game`, this.textStyle);
         const ebX = background.x - exitButton.width / 2;
-        const ebY = pabY + background.height / 5;
+        const ebY = pabY + background.height / 6;
 
         exitButton.interactive = true;
         
         exitButton.pointerdown = () => {
+            this.submitScore(this.env);
             this.worldManager('menu', this.loader, this.ticker);
         }
 
         exitButton.position.set(ebX, ebY);
         container.addChild(exitButton);
         
+    }
+
+    submitScore(env){
+        if(env.name){
+            fetch('/submitScore', {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json; charset=UTF-8"
+                },
+
+                body: JSON.stringify({
+                    name: env.name,
+                    score: env.vars.score
+                })
+            })
+        }
     }
 
     // Gameloop, runs every frame
