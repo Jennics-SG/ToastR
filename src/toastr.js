@@ -64,9 +64,9 @@ const toastR = function() {
             // After loading files for menu, load files for the rest of the game
             this.loadPromise = loadFiles(files, loader);
             this.loadPromise.then(() => {
-                this.worldState = this.worldState == "game" ? 
-                    "game" : "menu";
                 this.gameState = "loading_finished"
+                this.worldState = this.worldState == "game" ? 
+                "game" : "menu";
                 main()
             });
             main();
