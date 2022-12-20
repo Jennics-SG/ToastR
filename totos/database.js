@@ -1,5 +1,4 @@
-// 15/11/22
-
+// Connects to the database
 const mongoose = require('mongoose');
 const colours = require('../consoleColours');
 

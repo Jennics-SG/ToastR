@@ -80,8 +80,9 @@ export class Utilities{
         if(!textElem || !newText)
             return false;
         
+        textElem.text = ""
         textElem.text = newText;
-        textElem.x = (0 + textElem.width / 2);
+        textElem.x = (textElem.width / 2);
         return textElem;
     }
 

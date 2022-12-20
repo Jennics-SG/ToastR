@@ -48,7 +48,18 @@ export const Game = class extends PIXI.Container{
             },
         }
 
-        this.loadWorld();
+        this.textStyle = {
+            fill: "#c09947",
+            fontFamily: 'Arial',
+            fontSize: 62,
+            align: 'left',
+            lineJoin: "round",
+            stroke: "#694329",
+            strokeThickness: 20    
+        }
+
+
+        this.loadWorld.bind(this)();
 
         this.init();
     }
@@ -216,16 +227,6 @@ export const Game = class extends PIXI.Container{
         this.env.objs.order = order;
 
         // Make Score Text -------------------------------------------------------------
-        this.textStyle = {
-            fill: "#c09947",
-            fontFamily: 'Arial',
-            fontSize: 62,
-            align: 'left',
-            lineJoin: "round",
-            stroke: "#694329",
-            strokeThickness: 20    
-        }
-
         const score = new PIXI.Text(`Score: ${this.env.vars.score}`, this.textStyle);
         score.anchor.set(0.5);
         score.x = 0 + score.width / 2;
@@ -257,7 +258,7 @@ export const Game = class extends PIXI.Container{
     // Intialise environment variables and add delta to ticker
     init(){
         this.env.vars = {
-            score: 123456,
+            score: 0,
             chances: 3,
         }
 
@@ -269,7 +270,6 @@ export const Game = class extends PIXI.Container{
         this.env.vars.chances = Utilities.changeChanceIndicator(this.env.objs.chanceIndicators, this.loader.resources.x_dark.texture);
 
         this.ticker.add(this.delta.bind(this));
-        this.gameOver();
     }
 
     /** Make chance indicator at x, y
@@ -337,6 +337,7 @@ export const Game = class extends PIXI.Container{
         }
     }
 
+    // Display game over splash screen and give it interactivity
     gameOver(){
         const failTextArray = [
             'Fission Mailed', 
@@ -345,6 +346,10 @@ export const Game = class extends PIXI.Container{
             'Even my comatose nan could do better',
             'My dissapointment is immeasurable, \nand my day is ruined'
         ];
+
+        // Reset text colour as it for some reason turns red
+        this.textStyle.fill = "#c09947"
+        this.textStyle.stroke = "#694329"
 
         const randNum = Math.floor(Math.random() * failTextArray.length);
         const currentText = failTextArray[randNum];
@@ -419,9 +424,36 @@ export const Game = class extends PIXI.Container{
         playAgainButton.interactive = true;
 
         playAgainButton.pointerdown = () =>{
-            this.submitScore(this.env);
-            this.init.bind(this)();
-            container.destroy();
+            if(this.errorText){
+                this.errorText.destroy()
+                this.errorText = null
+            }
+
+            this.textStyle.fill = "#FF0000"
+            this.textStyle.stroke = ""
+            this.errorText = new PIXI.Text(``, this.textStyle)
+            const etX = fstX;
+            const etY = fstY;
+            this.errorText.position.set(etX, etY)
+            container.addChild(this.errorText)
+
+            if(!this.env.name || this.env.name.length < 3){
+                Utilities.updateText(this.errorText, "Name too short")
+                this.errorText.position.set(
+                    fstX - this.errorText.width,
+                    etY + this.errorText.height / 2
+                )
+            } else if (this.env.name.length > 15){
+                Utilities.updateText(this.errorText, "Name too long")
+                this.errorText.position.set(
+                    fstX - this.errorText.width, 
+                    etY + this.errorText.height / 2
+                )
+            } else {
+                this.submitScore(this.env);
+                this.init.bind(this)();
+                container.destroy()
+            }
         }
 
         playAgainButton.position.set(pabX, pabY);
@@ -444,6 +476,7 @@ export const Game = class extends PIXI.Container{
         
     }
 
+    // Submit score to database
     submitScore(env){
         if(env.name){
             fetch('/submitScore', {

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang = "en">
+    <head>
+        <%- include('../partials/head'); %>
+        <link rel="stylesheet" type = "text/css" href = "/static/home.css">
+    </head>
+    <body>
+        <!-- Top Navigation Bar -->
+        <%- include('../partials/topNav') %>
+        
+        <%- include('../partials/parallax', {title: "ToastR"}) %>
+
+        <!-- Text Body -->
+        <div class = "main-body">
+            <div class = "flex-text">
+                <label class = "container">
+                    <h3 id = "title">Sorry but you're offline</h3>
+                    <p id = "subText">While we would love for you to be making toast right now, but unfortunatly you must have an internet connection</p>
+                </label>
+            </div>
+        </div>
+    </body>
+</html>

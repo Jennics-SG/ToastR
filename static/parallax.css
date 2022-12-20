@@ -1,6 +1,6 @@
 /* Attributes that dont change between mobile and desktop */
 .parallax{
-    background-image: url('/assets/background.png');
+    background-image: url('/static/background.png');
     margin: 0;
     background-attachment: fixed;
     background-repeat: no-repeat;

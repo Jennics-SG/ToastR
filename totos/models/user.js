@@ -1,6 +1,6 @@
+// Schema for use with database
 const mongoose = require('mongoose');
 
-// Define schema
 const Schema = mongoose.Schema;
 
 const userSchema = new Schema({

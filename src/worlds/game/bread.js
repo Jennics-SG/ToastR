@@ -34,7 +34,7 @@ export class Bread extends Sprite{
         this.pointerup = this.dragEnd;
     }
 
-    " DRAGGING PHYSICS START "
+    // DRAGGING PHYSICS START
     dragStart(e){
         this.x = e.data.global.x;
         this.y = e.data.global.y;
@@ -57,7 +57,7 @@ export class Bread extends Sprite{
         this.dragging = false;
     }
 
-    " DRAGGING PHYSICS END "
+    // DRAGGING PHYSICS END
 
     /** Create a loop to change the bread texture every second while "toasting"
      * 
@@ -102,25 +102,22 @@ export class Bread extends Sprite{
         let indexOffset = 0;
 
         // Due to the array structure we use the offset to ensure we get the right texture
-        switch(property){
+        switch(property){            
+            case "beans":
+                indexOffset = 1;
+                break;
             case "butter":
                 indexOffset = 2;
-                this.texture = this.textures[((this.state - 1) * indexMultiplyer) + indexOffset].texture;
-                this.property = property;
                 break;
             case "chocolate":
                 indexOffset = 3;
-                this.texture = this.textures[((this.state - 1) * indexMultiplyer) + indexOffset].texture;
-                this.property = property;
                 break;
-            case "beans":
-                indexOffset = 1;
-                this.texture = this.textures[((this.state - 1) * indexMultiplyer) + indexOffset].texture;
-                this.property = property;
-                break;
+
             default:
                 console.error(`ERR: SPREAD UNKNOWN \nProperty:${property}`);
                 break;
         }
+        this.texture = this.textures[((this.state - 1) * indexMultiplyer) + indexOffset].texture;
+        this.property = property;
     }
 }

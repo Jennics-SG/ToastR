@@ -14,7 +14,6 @@ export const Loading = class extends Container{
             strokeThickness: 20              
         }
 
-
         const logo = new Text('ToastR', textStyle);
         logo.anchor.set(0.5);
         logo.position.set(

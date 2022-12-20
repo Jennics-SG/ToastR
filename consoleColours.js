@@ -1,5 +1,5 @@
+// A series of strings that will colour the console.log
 module.exports = {
-    reset: "\x1b[0m",
     foregroud: {
         black: "\x1b[30m%s\x1b[0m",
         red: "\x1b[31m%s\x1b[0m",

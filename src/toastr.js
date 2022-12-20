@@ -10,6 +10,7 @@ import TWEEN from '@tweenjs/tween.js'
 
 const toastR = function() {
     // Application to hold the game
+
     this.app = new PIXI.Application({
         height: 720,
         width: 1280,
@@ -24,7 +25,7 @@ const toastR = function() {
     this.worldState = null;
 
     // Loader for game sprites
-    const loader = new PIXI.Loader("assets")
+    const loader = new PIXI.Loader("static")
 
     // Canvas to hold game
     const canvas = new PIXI.Container()

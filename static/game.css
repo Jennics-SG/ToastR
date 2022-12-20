@@ -2,7 +2,28 @@
     background-color: #3e3e3e;
     margin: auto;
     width: fit-content;
+    height: fit-content;
     padding: 5px;
     padding-bottom: 5px;
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.2);
+}
+#noGame{
+    display: none;
+    background-color: #34A1A7;
+    width: 67%;
+    padding-top: 1%;
+    margin: auto;
+    margin-top: 5%;
+    padding-bottom: 3%;
+    text-align: center;
+}
+
+@media (hover: none), (hover:on-demand) {
+    #game{
+        display: none;
+    }
+
+    #noGame{
+        display: block;
+    }
 }

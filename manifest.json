@@ -1,0 +1,26 @@
+{
+"name": "ToastR",
+"short_name": "ToastR",
+"start_url": "/home",
+"display": "standalone",
+"description": "A web game about making toast",
+"lang": " English",
+"dir": "auto",
+"theme_color": "#000000",
+"background_color": "#000000",
+"orientation": "portrait",
+"icons":[
+  {
+    "src": "../static/icon_192.png",
+    "sizes": "192x192",
+    "type": "image/png",
+    "purpose": "any"
+  },
+  {
+    "src": "../static/icon_512.png",
+    "sizes": "512x512",
+    "type": "image/png",
+    "purpose": "maskable"
+  }
+]
+}
