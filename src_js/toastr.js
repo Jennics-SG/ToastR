@@ -66,7 +66,7 @@ const toastR = function() {
             this.loadPromise.then(() => {
                 this.gameState = "loading_finished"
                 this.worldState = this.worldState == "game" ? 
-                "game" : "menu";
+                    "game" : "menu";
                 main()
             });
             main();

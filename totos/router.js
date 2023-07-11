@@ -21,16 +21,16 @@ const routes = app => {
     });
 
     // Scoreboard
-    app.get('/scoreboard', (req, res) => {
-        let scores = getScores();
+    // app.get('/scoreboard', (req, res) => {
+    //     let scores = getScores();
 
-        if(scores instanceof Error){
-            res.render('pages/scoreboard', {scores: err});
-            return;
-        }
+    //     if(scores instanceof Error){
+    //         res.render('pages/scoreboard', {scores: err});
+    //         return;
+    //     }
         
-        res.render('pages/scoreboard', {scores: scores});
-    });
+    //     res.render('pages/scoreboard', {scores: scores});
+    // });
 
     // PWA Files
     app.get('/manifest', (req, res) => {
@@ -56,14 +56,14 @@ const routes = app => {
     sendDir('./static/', app);
 
     // Post score to scoreboard
-    app.post('/submitScore', (req, res) => {
-        const data = {
-            name: req.body.name,
-            score: req.body.score
-        }
+    // app.post('/submitScore', (req, res) => {
+    //     const data = {
+    //         name: req.body.name,
+    //         score: req.body.score
+    //     }
 
-        submitScore(data)
-    })
+    //     submitScore(data)
+    // })
 }
 
 // Get top 100 scores from database

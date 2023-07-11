@@ -6,8 +6,11 @@ const routes = require('./totos/router')
 const database = require('./totos/database');
 const bodyParser = require('body-parser');
 
+const fs = require('fs');
+
 // Initialise server and variables
 const init = () => {
+
     this.app = express();
     this.hostName = "127.0.0.1"
     this.port = 8080;
@@ -26,7 +29,7 @@ const init = () => {
 
 // Runtime server function
 const server = () => {
-    database.connect()
+    //database.connect()
 
     routes(this.app)
 
