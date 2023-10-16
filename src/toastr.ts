@@ -6,16 +6,23 @@
  */
 
 /** TODO:
- *  1. Initialise Application
- *  2. Load files using pixi v7
+ *  1. World Manager
 */
 
 import * as PIXI from 'pixi.js'
+
+import WorldManager from './worldManager'
 
 export default class ToastR {
 
     // Application to hold game
     private app : PIXI.Application;
+
+    // World Manager
+    private worldManager : WorldManager;
+
+    // Container to hold application
+    private canvas : PIXI.Container;
 
     constructor(){
         this.app = new PIXI.Application<HTMLCanvasElement>({
@@ -25,6 +32,11 @@ export default class ToastR {
             //hello: true,
             view: <HTMLCanvasElement>document.getElementById('game')
         });
+
+        this.canvas = new PIXI.Container;
+
+        this.worldManager = new WorldManager(this.canvas)
+        this.worldManager.setGameState("loading");
 
         this.init();
     }
@@ -53,8 +65,16 @@ export default class ToastR {
         // Load files for menu
         PIXI.Assets.loadBundle('menuFiles').then(() : void => {
             console.log('menu files loaded');
+
+            // Tell world manager to load menu
+            this.worldManager.loadWorld("menu");
+
+            // Load game files after Menu files loaded
             PIXI.Assets.loadBundle('gameFiles').then(() : void => {
                 console.log('Game files loaded');
+                
+                // Tell world manager game has finished loading
+                this.worldManager.setGameState("loading_fin");
             })
         });
 
