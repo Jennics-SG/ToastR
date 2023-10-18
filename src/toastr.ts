@@ -27,13 +27,14 @@ export default class ToastR {
     constructor(){
         this.app = new PIXI.Application<HTMLCanvasElement>({
             height: 720,
-            width: 1080,
+            width: 1280,
             backgroundColor: 0x2f9da3,
             //hello: true,
             view: <HTMLCanvasElement>document.getElementById('game')
         });
 
         this.canvas = new PIXI.Container;
+        this.app.stage.addChild(this.canvas);
 
         this.worldManager = new WorldManager(this.canvas)
         this.worldManager.setGameState("loading");
@@ -67,6 +68,7 @@ export default class ToastR {
             console.log('menu files loaded');
 
             // Tell world manager to load menu
+            this.worldManager.setGameState("loading_game");
             this.worldManager.loadWorld("menu");
 
             // Load game files after Menu files loaded

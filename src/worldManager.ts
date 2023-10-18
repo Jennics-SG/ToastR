@@ -5,6 +5,7 @@
  */
 
 import { Container, Assets } from "pixi.js";
+import Menu from "./worlds/menu";
 
 //Class representing world manager
 export default class WorldManager{
@@ -38,11 +39,18 @@ export default class WorldManager{
 
         this.deleteWorld();
 
-        switch(world){
-            case "menu":
-                console.log('goto menu');
-                break;
+        if(this.gameState != "loading"){
+            switch(world){
+                case "menu":
+                    this.currentWorld = new Menu(this);
+                    break;
+            }
         }
+
+        if(!this.currentWorld)
+            return
+        
+        this.canvas.addChild(this.currentWorld);
     }
 
     setGameState(str : String) : void {

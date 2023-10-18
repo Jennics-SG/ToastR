@@ -4,7 +4,7 @@
  *  Date:   16/10/23
  */
 
-import { Container,Sprite,Assets } from "pixi.js";
+import { Container,Sprite,Assets,Text,TextStyle,Texture } from "pixi.js";
 import WorldManager from "../worldManager";
 
 export default class Menu extends Container{
@@ -15,7 +15,7 @@ export default class Menu extends Container{
         super();
         this.worldManager = worldManager;
 
-        const textStyle = {
+        const textStyle : TextStyle = new TextStyle({
             fill: "#c09947",
             fontFamily: 'Arial',
             fontSize: 0,
@@ -23,9 +23,37 @@ export default class Menu extends Container{
             lineJoin: "round",
             stroke: "#694329",
             strokeThickness: 20              
-        }
+        });
 
-        const background = new Sprite(Assets.get("background"))
+        const background : Sprite = new Sprite(Assets.get("background"))
         this.addChild(background);
+
+        const menuBox : Sprite = new Sprite(Assets.get("greyBox"));
+        this.addChild(menuBox);
+
+        textStyle.fontSize = 122;
+        const logo : Text = new Text('ToastR', textStyle);
+        logo.anchor.set(0.5);
+        logo.position.set(
+            menuBox.x + menuBox.width / 2,
+            menuBox.y + logo.height
+        );
+        this.addChild(logo);
+
+        const playButtonTexture : Texture = Assets.get("playButton");
+        const playButtonInvert : Texture = Assets.get("playButton_inv");
+        
+        const playButton = new Sprite(playButtonTexture);
+        playButton.scale.set(0.5);
+        playButton.anchor.set(0.5);
+        playButton.position.set(menuBox.x + menuBox.width / 2, menuBox.y + menuBox.height / 2);
+
+        playButton.eventMode = "dynamic";
+
+        playButton.on('pointerover', () => {
+            
+        }) 
+
+        this.addChild(playButton);
     }
 }
