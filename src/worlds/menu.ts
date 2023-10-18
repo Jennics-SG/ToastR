@@ -7,6 +7,9 @@
 import { Container,Sprite,Assets,Text,TextStyle,Texture } from "pixi.js";
 import WorldManager from "../worldManager";
 
+/** Menu for ToastR
+ *  Creates all elements for the world & handles interactions
+ */
 export default class Menu extends Container{
 
     private worldManager : WorldManager;
@@ -15,6 +18,7 @@ export default class Menu extends Container{
         super();
         this.worldManager = worldManager;
 
+        // Text style for Logo
         const textStyle : TextStyle = new TextStyle({
             fill: "#c09947",
             fontFamily: 'Arial',
@@ -25,6 +29,7 @@ export default class Menu extends Container{
             strokeThickness: 20              
         });
 
+        // Menu elements
         const background : Sprite = new Sprite(Assets.get("background"))
         this.addChild(background);
 
@@ -50,9 +55,17 @@ export default class Menu extends Container{
 
         playButton.eventMode = "dynamic";
 
+        // Play button interactions
         playButton.on('pointerover', () => {
-            
-        }) 
+            playButton.texture = playButtonInvert;
+        });
+        playButton.on('pointerout', () => {
+            playButton.texture = playButtonTexture;
+        });
+
+        playButton.on('pointerdown', () => {
+            this.worldManager.loadWorld("game")
+        })
 
         this.addChild(playButton);
     }

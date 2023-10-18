@@ -34,6 +34,8 @@ export default class ToastR {
         });
 
         this.canvas = new PIXI.Container;
+        this.canvas.width = this.app.view.width;
+        this.canvas.height = this.app.view.height;
         this.app.stage.addChild(this.canvas);
 
         this.worldManager = new WorldManager(this.canvas)

@@ -6,6 +6,7 @@
 
 import { Container, Assets } from "pixi.js";
 import Menu from "./worlds/menu";
+import Loading from "./worlds/loading";
 
 //Class representing world manager
 export default class WorldManager{
@@ -44,7 +45,17 @@ export default class WorldManager{
                 case "menu":
                     this.currentWorld = new Menu(this);
                     break;
+                case "game":
+                    // Check to make sure game is not loading files
+                    if(this.gameState == "loading_game"){
+                        this.currentWorld = new Loading(this.canvas.width, this.canvas.height);
+                        break;
+                    }
+                    console.log('game');
+                    break;
             }
+        } else {
+            this.currentWorld = new Loading(this.canvas.width, this.canvas.height)
         }
 
         if(!this.currentWorld)
