@@ -79,6 +79,7 @@ export default class ToastR {
                 
                 // Tell world manager game has finished loading
                 this.worldManager.setGameState("loading_fin");
+                this.worldManager.loadWorld(this.worldManager.getWorldState())
             })
         });
 

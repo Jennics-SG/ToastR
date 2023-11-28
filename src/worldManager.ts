@@ -7,6 +7,7 @@
 import { Container, Assets } from "pixi.js";
 import Menu from "./worlds/menu";
 import Loading from "./worlds/loading";
+import Game from "./worlds/game/game";
 
 //Class representing world manager
 export default class WorldManager{
@@ -34,12 +35,13 @@ export default class WorldManager{
         return true;
     }
 
-    loadWorld(world : String) : void {
+    loadWorld(world : String | null) : void {
         if(!world)
             return;
 
         this.deleteWorld();
 
+        this.worldState = world
         if(this.gameState != "loading"){
             switch(world){
                 case "menu":
@@ -51,7 +53,7 @@ export default class WorldManager{
                         this.currentWorld = new Loading(this.canvas.width, this.canvas.height);
                         break;
                     }
-                    console.log('game');
+                    this.currentWorld = new Game(this)
                     break;
             }
         } else {
@@ -66,5 +68,8 @@ export default class WorldManager{
 
     setGameState(str : String) : void {
         this.gameState = str;
+    }
+    getWorldState() : String | null{
+        return this.worldState;
     }
 }
